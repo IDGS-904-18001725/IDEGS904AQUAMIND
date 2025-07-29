@@ -61,7 +61,8 @@ fun BottomNavBar(navController: NavController) {
         Screen.Controllers,
         Screen.Notifications,
         Screen.History,
-        Screen.Settings
+        Screen.Settings,
+        Screen.Eventos
     )
 
     // 5. Componente de Material3: la barra de navegación inferior

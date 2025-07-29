@@ -3,9 +3,12 @@ package com.example.idegs904aquamind.network.service
 import com.example.idegs904aquamind.data.model.LoginRequest
 import com.example.idegs904aquamind.data.model.LoginResponse
 import com.example.idegs904aquamind.data.model.Nodo
+import com.example.idegs904aquamind.data.model.Evento
+import com.example.idegs904aquamind.data.model.FechaRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * Definición de los endpoints de la API REST.
@@ -28,4 +31,19 @@ interface ApiService {
      */
     @GET("nodos/nodo")
     suspend fun getNodos(): List<Nodo>
+
+    /**
+     * Obtiene eventos por intervalo de fechas
+     */
+    @POST("eventos/evento/fechas")
+    suspend fun getEventosPorFechas(@Body request: FechaRequest): List<Evento>
+
+    /**
+     * Obtiene eventos por periodicidad
+     */
+    @GET("eventos/evento/periodo/{cantidad}/tipo/{tipo}")
+    suspend fun getEventosPorPeriodo(
+        @Path("cantidad") cantidad: Int,
+        @Path("tipo") tipo: Int
+    ): List<Evento>
 }

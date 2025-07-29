@@ -12,6 +12,7 @@ import com.example.idegs904aquamind.features.controllers.presentation.Controller
 import com.example.idegs904aquamind.features.notifications.presentation.NotificationsScreen
 import com.example.idegs904aquamind.features.history.presentation.HistoryScreen
 import com.example.idegs904aquamind.features.settings.presentation.SettingsScreen
+import com.example.idegs904aquamind.features.eventos.presentation.EventosScreen
 import com.example.idegs904aquamind.navigation.components.BaseScreen
 
 @Composable
@@ -78,6 +79,16 @@ fun AppNavHost(
                 navController = navController
             ) { padding ->
                 SettingsScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 7) Eventos
+        composable(Screen.Eventos.route) {
+            BaseScreen(
+                screen = Screen.Eventos,
+                navController = navController
+            ) { padding ->
+                EventosScreen(modifier = Modifier.padding(padding))
             }
         }
 
