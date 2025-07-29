@@ -40,13 +40,20 @@ android {
         compose = true
     }
 }
-
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "androidx.compose.material3" && requested.name == "material3") {
+            useVersion("1.2.1")
+            because("Necesitamos outlinedTextFieldColors que no está en versiones anteriores")
+        }
+    }
+}
 dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
+    //implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
@@ -54,10 +61,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.icons.extended)
 
     implementation(libs.retrofit)
     implementation(libs.converter.moshi)

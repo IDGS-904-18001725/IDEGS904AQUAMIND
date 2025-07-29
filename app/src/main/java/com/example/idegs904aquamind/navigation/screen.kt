@@ -5,17 +5,8 @@ package com.example.idegs904aquamind.navigation
  *
  * Cada objeto hereda de Screen y especifica su ruta única.
  */
-sealed class Screen(val route: String) {
+sealed class Screen(val route: String, val title: String = "") {
+    object Login : Screen("login", "Iniciar sesión")
+    object Dashboard : Screen("dashboard", "Dashboard")
 
-    /**
-     * Pantalla de login donde el usuario ingresa credenciales.
-     */
-    object Login : Screen("login")
-
-    /**
-     * Pantalla principal tras el login (ejemplo placeholder).
-     */
-    object Home : Screen("home")
-
-    // Aquí puedes agregar más rutas para otros módulos (Settings, Profile, etc.)
 }

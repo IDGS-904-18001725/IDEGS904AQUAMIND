@@ -1,58 +1,55 @@
 package com.example.idegs904aquamind.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+// Definición de la paleta de colores AquaMind para modo claro
+private val LightColors = lightColorScheme(
+    primary = Color(0xFF0277BD),      // Azul oscuro
     onPrimary = Color.White,
+    secondary = Color(0xFF81D4FA),    // Azul claro
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    background = Color(0xFFE1F5FE),   // Fondo muy claro
+    onBackground = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black,
+    error = Color(0xFFB00020),
+    onError = Color.White
 )
 
+// (Opcional) Paleta para modo oscuro
+private val DarkColors = darkColorScheme(
+    primary = Color(0xFF81D4FA),
+    onPrimary = Color.Black,
+    secondary = Color(0xFF0277BD),
+    onSecondary = Color.Black,
+    background = Color(0xFF002F47),
+    onBackground = Color.White,
+    surface = Color(0xFF003E5F),
+    onSurface = Color.White,
+    error = Color(0xFFCF6679),
+    onError = Color.Black
+)
+
+/**
+ * Tema de la aplicación AquaMind.
+ * Aplica la paleta AquaMind y tipografía por defecto de Material3.
+ *
+ * @param darkTheme Si es true, usa paleta DarkColors; en caso contrario LightColors.
+ * @param content Composable que renderiza la UI de la app.
+ */
 @Composable
-fun IDEGS904AQUAMINDTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+fun AquaMindTheme(
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+    val colors = if (darkTheme) DarkColors else LightColors
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
+        colorScheme = colors,
+        typography = MaterialTheme.typography,
         content = content
     )
 }
