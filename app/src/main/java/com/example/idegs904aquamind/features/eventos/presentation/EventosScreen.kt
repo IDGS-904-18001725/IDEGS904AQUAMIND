@@ -199,8 +199,6 @@ fun PeriodoSelector(
     tipo: TipoPeriodo,
     onPeriodoChange: (Int, TipoPeriodo) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -212,45 +210,40 @@ fun PeriodoSelector(
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(8.dp))
+        
+        // Campo de cantidad
+        OutlinedTextField(
+            value = cantidad.toString(),
+            onValueChange = { 
+                val newCantidad = it.toIntOrNull() ?: cantidad
+                onPeriodoChange(newCantidad, tipo)
+            },
+            label = { Text("Cantidad de periodos") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        
+        Spacer(Modifier.height(12.dp))
+        
+        // Selector de tipo con chips
+        Text(
+            text = "Tipo de periodo:",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(Modifier.height(8.dp))
+        
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedTextField(
-                value = cantidad.toString(),
-                onValueChange = { 
-                    val newCantidad = it.toIntOrNull() ?: cantidad
-                    onPeriodoChange(newCantidad, tipo)
-                },
-                label = { Text("Cantidad") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
-            ) {
-                OutlinedTextField(
-                    value = tipo.label,
-                    onValueChange = { },
-                    readOnly = true,
-                    label = { Text("Tipo") },
+            TipoPeriodo.values().forEach { periodo ->
+                FilterChip(
+                    selected = tipo == periodo,
+                    onClick = { onPeriodoChange(cantidad, periodo) },
+                    label = { Text(periodo.label) },
                     modifier = Modifier.weight(1f)
                 )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    TipoPeriodo.values().forEach { periodo ->
-                        DropdownMenuItem(
-                            text = { Text(periodo.label) },
-                            onClick = {
-                                onPeriodoChange(cantidad, periodo)
-                                expanded = false
-                            }
-                        )
-                    }
-                }
             }
         }
     }
