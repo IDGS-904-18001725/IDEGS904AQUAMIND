@@ -2,8 +2,9 @@ package com.example.idegs904aquamind.network.service
 
 import com.example.idegs904aquamind.data.model.LoginRequest
 import com.example.idegs904aquamind.data.model.LoginResponse
+import com.example.idegs904aquamind.data.model.Nodo
 import retrofit2.http.Body
-
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 /**
@@ -21,4 +22,10 @@ interface ApiService {
     suspend fun login(
         @Body request: LoginRequest
     ): LoginResponse
+
+    /**
+     * Obtiene la lista de nodos (requiere token de autorización)
+     */
+    @GET("nodos/nodo")
+    suspend fun getNodos(): List<Nodo>
 }
