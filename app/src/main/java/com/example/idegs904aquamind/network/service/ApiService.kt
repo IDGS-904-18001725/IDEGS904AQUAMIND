@@ -5,6 +5,7 @@ import com.example.idegs904aquamind.data.model.LoginResponse
 import com.example.idegs904aquamind.data.model.Nodo
 import com.example.idegs904aquamind.data.model.Evento
 import com.example.idegs904aquamind.data.model.FechaRequest
+import com.example.idegs904aquamind.data.model.Recomendacion
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -46,4 +47,10 @@ interface ApiService {
         @Path("cantidad") cantidad: Int,
         @Path("tipo") tipo: Int
     ): List<Evento>
+
+    /**
+     * Obtiene recomendaciones aleatorias
+     */
+    @GET("recomendaciones/aleatorias/10")
+    suspend fun getRecomendacionesAleatorias(): List<Recomendacion>
 }

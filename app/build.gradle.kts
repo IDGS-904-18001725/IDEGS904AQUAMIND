@@ -78,4 +78,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt       (libs.hilt.compiler)
     implementation(libs.datastore.preferences)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("com.patrykandpatrick.vico:compose:1.13.1")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
 }

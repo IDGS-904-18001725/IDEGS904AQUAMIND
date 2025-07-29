@@ -4,8 +4,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -25,6 +26,7 @@ sealed class Screen(
     object Controllers : Screen("controllers", "Controles", Icons.Default.AccountTree, "Controles")
     object Notifications : Screen("notifications", "Notificaciones", Icons.Default.Notifications, "Notificaciones")
     object History : Screen("history", "Historial", Icons.Default.History, "Historial")
-    object Settings : Screen("settings", "Configuración", Icons.Default.Settings, "Configuración")
     object Eventos : Screen("eventos", "Eventos", Icons.Default.Timeline, "Eventos")
+    object Recomendaciones : Screen("recomendaciones", "Recomendaciones", Icons.Default.WaterDrop, "Recomendaciones")
+    object Graficos : Screen("graficos", "Gráficos", Icons.Default.BarChart, "Gráficos")
 }

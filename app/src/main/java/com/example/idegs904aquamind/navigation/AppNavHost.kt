@@ -11,8 +11,9 @@ import com.example.idegs904aquamind.features.dashboard.presentation.DashboardScr
 import com.example.idegs904aquamind.features.controllers.presentation.ControllersScreen
 import com.example.idegs904aquamind.features.notifications.presentation.NotificationsScreen
 import com.example.idegs904aquamind.features.history.presentation.HistoryScreen
-import com.example.idegs904aquamind.features.settings.presentation.SettingsScreen
 import com.example.idegs904aquamind.features.eventos.presentation.EventosScreen
+import com.example.idegs904aquamind.features.recomendaciones.presentation.RecomendacionesScreen
+import com.example.idegs904aquamind.features.graficos.presentation.GraficosScreen
 import com.example.idegs904aquamind.navigation.components.BaseScreen
 
 @Composable
@@ -72,23 +73,33 @@ fun AppNavHost(
             }
         }
 
-        // 6) Configuraciones
-        composable(Screen.Settings.route) {
-            BaseScreen(
-                screen = Screen.Settings,
-                navController = navController
-            ) { padding ->
-                SettingsScreen(modifier = Modifier.padding(padding))
-            }
-        }
-
-        // 7) Eventos
+        // 6) Eventos
         composable(Screen.Eventos.route) {
             BaseScreen(
                 screen = Screen.Eventos,
                 navController = navController
             ) { padding ->
                 EventosScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 7) Recomendaciones
+        composable(Screen.Recomendaciones.route) {
+            BaseScreen(
+                screen = Screen.Recomendaciones,
+                navController = navController
+            ) { padding ->
+                RecomendacionesScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 8) Gráficos
+        composable(Screen.Graficos.route) {
+            BaseScreen(
+                screen = Screen.Graficos,
+                navController = navController
+            ) { padding ->
+                GraficosScreen(modifier = Modifier.padding(padding))
             }
         }
 
