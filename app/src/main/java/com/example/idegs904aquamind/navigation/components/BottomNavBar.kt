@@ -17,17 +17,10 @@ import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.example.idegs904aquamind.navigation.Screen
 
 
-// 1. Definimos un sealed class para centralizar rutas, íconos y etiquetas
-sealed class Screen(val route: String, val icon: ImageVector, val label: String) {
-    object Controllers : Screen("controllers", Icons.Default.AccountTree, "Controles")
-    object Notifications: Screen("notifications", Icons.Default.Notifications, "Notificaciones")
-    object History  : Screen("history",  Icons.Default.History,  "Historial")
-    object Settings : Screen("settings", Icons.Default.Settings, "Configuración")
-}
-
-// 2. Extensión de NavController para navegar en modo “single‑top” y restaurar estado
+// 2. Extensión de NavController para navegar en modo "single‑top" y restaurar estado
 fun NavController.navigateSingleTop(route: String) {
     this.navigate(route) {
         // Evita crear duplicados en la pila si ya estamos en esa pantalla
@@ -93,7 +86,7 @@ fun BottomNavBar(navController: NavController) {
                 icon = {
                     // Ícono de la pantalla
                     Icon(
-                        imageVector    = screen.icon,
+                        imageVector    = screen.icon!!,
                         contentDescription = screen.label
                     )
                 },
