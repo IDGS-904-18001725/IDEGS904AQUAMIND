@@ -15,7 +15,10 @@ import java.util.concurrent.TimeUnit
 object RetrofitBuilder {
 
     private const val BASE_URL = "https://genuine-liberation-production.up.railway.app/api/v1/"
-
+    
+    // Instancia estática del ApiService (se inicializa cuando se necesite)
+    private var apiServiceInstance: ApiService? = null
+    
     fun create(context: Context): ApiService {
         // 1. Construye Moshi con soporte para data classes de Kotlin
         val moshi = Moshi.Builder()
@@ -45,4 +48,15 @@ object RetrofitBuilder {
             .build()
             .create(ApiService::class.java)
     }
+    
+    /**
+     * Obtiene la instancia del ApiService, creándola si es necesario
+     */
+    fun getApiService(context: Context): ApiService {
+        if (apiServiceInstance == null) {
+            apiServiceInstance = create(context)
+        }
+        return apiServiceInstance!!
+    }
+    
 }

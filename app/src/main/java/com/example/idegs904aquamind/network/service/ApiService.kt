@@ -8,6 +8,8 @@ import com.example.idegs904aquamind.data.model.FechaRequest
 import com.example.idegs904aquamind.data.model.Recomendacion
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.data.model.MarcarLeidaRequest
+import com.example.idegs904aquamind.features.perfil.data.model.Usuario
+import com.example.idegs904aquamind.features.perfil.data.model.ActualizarUsuarioRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -78,4 +80,20 @@ interface ApiService {
         @Path("id") id: Int,
         @Body request: MarcarLeidaRequest
     ): Notificacion
+
+    // Endpoints de perfil de usuario
+    /**
+     * Obtiene la información del usuario por ID
+     */
+    @GET("usuarios/usuario/{id}")
+    suspend fun obtenerUsuario(@Path("id") id: Int): Usuario
+
+    /**
+     * Actualiza la información del usuario
+     */
+    @PUT("usuarios/usuario/{id}")
+    suspend fun actualizarUsuario(
+        @Path("id") id: Int,
+        @Body request: ActualizarUsuarioRequest
+    ): Usuario
 }
