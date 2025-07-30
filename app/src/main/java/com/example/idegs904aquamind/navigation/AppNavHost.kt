@@ -14,6 +14,12 @@ import com.example.idegs904aquamind.features.history.presentation.HistoryScreen
 import com.example.idegs904aquamind.features.eventos.presentation.EventosScreen
 import com.example.idegs904aquamind.features.recomendaciones.presentation.RecomendacionesScreen
 import com.example.idegs904aquamind.features.graficos.presentation.GraficosScreen
+import com.example.idegs904aquamind.features.configuraciones.presentation.ConfiguracionesScreen
+import com.example.idegs904aquamind.features.reportes.presentation.ReportesScreen
+import com.example.idegs904aquamind.features.mantenimiento.presentation.MantenimientoScreen
+import com.example.idegs904aquamind.features.soporte.presentation.SoporteScreen
+import com.example.idegs904aquamind.features.ayuda.presentation.AyudaScreen
+import com.example.idegs904aquamind.features.perfil.presentation.PerfilScreen
 import com.example.idegs904aquamind.navigation.components.BaseScreen
 
 @Composable
@@ -100,6 +106,67 @@ fun AppNavHost(
                 navController = navController
             ) { padding ->
                 GraficosScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // Nuevas rutas del drawer
+        // 9) Configuraciones
+        composable(Screen.Configuraciones.route) {
+            BaseScreen(
+                screen = Screen.Configuraciones,
+                navController = navController
+            ) { padding ->
+                ConfiguracionesScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 10) Reportes
+        composable(Screen.Reportes.route) {
+            BaseScreen(
+                screen = Screen.Reportes,
+                navController = navController
+            ) { padding ->
+                ReportesScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 11) Mantenimiento
+        composable(Screen.Mantenimiento.route) {
+            BaseScreen(
+                screen = Screen.Mantenimiento,
+                navController = navController
+            ) { padding ->
+                MantenimientoScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 12) Soporte
+        composable(Screen.Soporte.route) {
+            BaseScreen(
+                screen = Screen.Soporte,
+                navController = navController
+            ) { padding ->
+                SoporteScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 13) Ayuda
+        composable(Screen.Ayuda.route) {
+            BaseScreen(
+                screen = Screen.Ayuda,
+                navController = navController
+            ) { padding ->
+                AyudaScreen(modifier = Modifier.padding(padding))
+            }
+        }
+
+        // 14) Perfil
+        composable(Screen.Perfil.route) {
+            BaseScreen(
+                screen = Screen.Perfil,
+                navController = navController
+            ) { padding ->
+                PerfilScreen(modifier = Modifier.padding(padding))
             }
         }
 

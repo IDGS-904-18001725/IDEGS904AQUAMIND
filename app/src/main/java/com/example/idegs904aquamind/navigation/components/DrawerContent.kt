@@ -1,0 +1,204 @@
+package com.example.idegs904aquamind.navigation.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.idegs904aquamind.navigation.Screen
+
+@Composable
+fun DrawerContent(
+    onItemClick: (Screen) -> Unit,
+    onCloseDrawer: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .background(Color(0xFF01579B))
+            .padding(0.dp)
+    ) {
+        // Header del usuario
+        DrawerHeader()
+        
+        // Separador
+        Divider(
+            color = Color(0xFF039BE5),
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        
+        // Lista de elementos del drawer
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(drawerItems) { item ->
+                DrawerItem(
+                    item = item,
+                    onClick = {
+                        onItemClick(item.screen)
+                        onCloseDrawer()
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DrawerHeader() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        // Avatar o icono de usuario
+        Icon(
+            imageVector = Icons.Default.Person,
+            contentDescription = "Usuario",
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = Color(0xFF039BE5),
+                    shape = MaterialTheme.shapes.medium
+                )
+                .padding(12.dp),
+            tint = Color.White
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Nombre del usuario
+        Text(
+            text = "Juan Pérez",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White,
+            fontWeight = FontWeight.Bold
+        )
+        
+        // Email del usuario
+        Text(
+            text = "juan.perez@empresa.com",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White.copy(alpha = 0.8f),
+            fontSize = 12.sp
+        )
+        
+        // Rol del usuario
+        Text(
+            text = "Administrador",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color(0xFF039BE5),
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun DrawerItem(
+    item: DrawerItem,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.Transparent
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icono
+            Icon(
+                imageVector = item.icon,
+                contentDescription = item.title,
+                tint = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Título
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+data class DrawerItem(
+    val screen: Screen,
+    val title: String,
+    val icon: ImageVector
+)
+
+// Lista de elementos del drawer
+private val drawerItems = listOf(
+    DrawerItem(
+        screen = Screen.Graficos,
+        title = "Gráficos",
+        icon = Icons.Default.BarChart
+    ),
+    DrawerItem(
+        screen = Screen.Eventos,
+        title = "Eventos",
+        icon = Icons.Default.Timeline
+    ),
+    DrawerItem(
+        screen = Screen.Recomendaciones,
+        title = "Recomendaciones",
+        icon = Icons.Default.Lightbulb
+    ),
+    DrawerItem(
+        screen = Screen.History,
+        title = "Historial",
+        icon = Icons.Default.History
+    ),
+    DrawerItem(
+        screen = Screen.Configuraciones,
+        title = "Configuraciones",
+        icon = Icons.Default.Settings
+    ),
+    DrawerItem(
+        screen = Screen.Reportes,
+        title = "Reportes",
+        icon = Icons.Default.Assessment
+    ),
+    DrawerItem(
+        screen = Screen.Mantenimiento,
+        title = "Mantenimiento",
+        icon = Icons.Default.Build
+    ),
+    DrawerItem(
+        screen = Screen.Soporte,
+        title = "Soporte",
+        icon = Icons.Default.Support
+    ),
+    DrawerItem(
+        screen = Screen.Ayuda,
+        title = "Ayuda",
+        icon = Icons.Default.Help
+    ),
+    DrawerItem(
+        screen = Screen.Perfil,
+        title = "Perfil",
+        icon = Icons.Default.Person
+    )
+) 

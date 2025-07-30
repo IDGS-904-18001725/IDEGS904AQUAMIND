@@ -56,14 +56,11 @@ fun BottomNavBar(navController: NavController) {
         ?.destination
         ?.route
 
-    // 4. Lista de pantallas que aparecerán en la barra
+    // 4. Lista de pantallas principales que aparecerán en la barra
     val items = listOf(
+        Screen.Dashboard,
         Screen.Controllers,
-        Screen.Notifications,
-        Screen.History,
-        Screen.Eventos,
-        Screen.Recomendaciones,
-        Screen.Graficos
+        Screen.Notifications
     )
 
     // 5. Componente de Material3: la barra de navegación inferior
