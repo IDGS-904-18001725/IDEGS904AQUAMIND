@@ -2,6 +2,8 @@ package com.example.idegs904aquamind.features.configuraciones.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -45,12 +47,13 @@ fun ConfiguracionesScreen(modifier: Modifier = Modifier) {
             }
         }
         
-        // Contenido
+        // Contenido con scroll
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Sección de Notificaciones
             ConfiguracionSeccion(
@@ -83,6 +86,9 @@ fun ConfiguracionesScreen(modifier: Modifier = Modifier) {
                     "Limpiar caché"
                 )
             )
+            
+            // Espacio adicional al final para evitar que el último elemento se corte
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -99,29 +105,40 @@ fun ConfiguracionSeccion(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Text(
                 text = titulo,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            items.forEach { item ->
+            items.forEachIndexed { index, item ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = item,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
                     )
+                    Spacer(modifier = Modifier.width(16.dp))
                     Switch(
                         checked = false,
                         onCheckedChange = { /* TODO */ }
+                    )
+                }
+                
+                // Separador entre elementos (excepto el último)
+                if (index < items.size - 1) {
+                    Divider(
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = Color.LightGray.copy(alpha = 0.3f)
                     )
                 }
             }
