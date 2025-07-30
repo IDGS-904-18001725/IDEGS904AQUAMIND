@@ -81,4 +81,5 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.patrykandpatrick.vico:compose:1.13.1")
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

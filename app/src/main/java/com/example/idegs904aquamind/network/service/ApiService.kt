@@ -6,9 +6,12 @@ import com.example.idegs904aquamind.data.model.Nodo
 import com.example.idegs904aquamind.data.model.Evento
 import com.example.idegs904aquamind.data.model.FechaRequest
 import com.example.idegs904aquamind.data.model.Recomendacion
+import com.example.idegs904aquamind.data.model.Notificacion
+import com.example.idegs904aquamind.data.model.MarcarLeidaRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 /**
@@ -53,4 +56,26 @@ interface ApiService {
      */
     @GET("recomendaciones/aleatorias/10")
     suspend fun getRecomendacionesAleatorias(): List<Recomendacion>
+
+    // Endpoints de notificaciones
+    /**
+     * Obtiene todas las notificaciones
+     */
+    @GET("notificaciones/notificacion")
+    suspend fun getNotificaciones(): List<Notificacion>
+
+    /**
+     * Obtiene notificaciones por estatus
+     */
+    @GET("notificaciones/estatus/{estatus}")
+    suspend fun getNotificacionesPorEstatus(@Path("estatus") estatus: Int): List<Notificacion>
+
+    /**
+     * Marca una notificación como leída
+     */
+    @PUT("notificaciones/notificacion/{id}")
+    suspend fun marcarNotificacionLeida(
+        @Path("id") id: Int,
+        @Body request: MarcarLeidaRequest
+    ): Notificacion
 }

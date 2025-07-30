@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.idegs904aquamind.data.model.User
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -20,12 +22,31 @@ class SessionManager(private val context: Context) {
     companion object {
         // Clave para almacenar el token de autenticación
         private val TOKEN_KEY = stringPreferencesKey("auth_token")
-        // Clave para almacenar datos adicionales del usuario en JSON (opcional)
-        private val USER_KEY  = stringPreferencesKey("user_data")
+        // Clave para almacenar datos del usuario en JSON
+        private val USER_KEY = stringPreferencesKey("user_data")
+        // Clave para almacenar el tipo de token
+        private val TOKEN_TYPE_KEY = stringPreferencesKey("token_type")
+    }
+
+    private val gson = Gson()
+
+    /**
+     * Persiste el token JWT y datos del usuario en DataStore.
+     *
+     * @param token Token recibido tras el login.
+     * @param type Tipo de token (Bearer).
+     * @param user Datos del usuario.
+     */
+    suspend fun saveAuthData(token: String, type: String, user: User) {
+        context.dataStore.edit { prefs ->
+            prefs[TOKEN_KEY] = token
+            prefs[TOKEN_TYPE_KEY] = type
+            prefs[USER_KEY] = gson.toJson(user)
+        }
     }
 
     /**
-     * Persiste el token JWT en DataStore.
+     * Persiste solo el token JWT en DataStore (método legacy).
      *
      * @param token Token recibido tras el login.
      */
@@ -48,11 +69,33 @@ class SessionManager(private val context: Context) {
     }
 
     /**
+     * Recupera los datos del usuario de forma síncrona.
+     *
+     * @return Datos del usuario o null si no existe.
+     */
+    fun getUser(): User? = runBlocking {
+        val prefs = context.dataStore.data.first()
+        val userJson = prefs[USER_KEY]
+        userJson?.let { gson.fromJson(it, User::class.java) }
+    }
+
+    /**
+     * Recupera el nombre completo del usuario.
+     *
+     * @return Nombre completo o null si no existe.
+     */
+    fun getUserFullName(): String? {
+        val user = getUser()
+        return user?.let { "${it.nombre} ${it.apellido}" }
+    }
+
+    /**
      * Limpia la sesión, removiendo token y datos de usuario.
      */
     suspend fun clearSession() {
         context.dataStore.edit { prefs ->
             prefs.remove(TOKEN_KEY)
+            prefs.remove(TOKEN_TYPE_KEY)
             prefs.remove(USER_KEY)
         }
     }

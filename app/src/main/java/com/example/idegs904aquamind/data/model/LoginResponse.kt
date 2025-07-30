@@ -4,10 +4,22 @@ package com.example.idegs904aquamind.data.model
  * DTO de respuesta tras una petición de login exitosa.
  *
  * @property token Token JWT para autenticar peticiones subsecuentes.
- * @property user Información básica del usuario autenticado.
- *                    Se definirá la clase User en próximos pasos según los campos reales.
+ * @property type Tipo de token (Bearer).
+ * @property user Información del usuario autenticado.
  */
 data class LoginResponse(
-    val token: String
-    //val user: User
+    val token: String,
+    val type: String,
+    val user: User
+)
+
+/**
+ * Modelo de datos del usuario.
+ */
+data class User(
+    val id: Int,
+    val nombre: String,
+    val apellido: String,
+    val email: String,
+    val username: String
 )

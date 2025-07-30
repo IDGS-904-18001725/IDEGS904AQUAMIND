@@ -32,8 +32,8 @@ class AuthRepository(private val context: Context) {
         // Llama al endpoint y obtiene la respuesta
         val response: LoginResponse = apiService.login(request)
 
-        // Persiste el token para futuras peticiones
-        sessionManager.saveAuthToken(response.token)
+        // Persiste el token, tipo y datos del usuario para futuras peticiones
+        sessionManager.saveAuthData(response.token, response.type, response.user)
 
         return response
     }
