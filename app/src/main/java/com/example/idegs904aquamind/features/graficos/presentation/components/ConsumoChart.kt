@@ -22,8 +22,13 @@ import com.patrykandpatrick.vico.compose.style.ChartStyle
 import com.patrykandpatrick.vico.core.entry.ChartEntry
 import com.patrykandpatrick.vico.core.entry.entryOf
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.axis.AxisPosition
+import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
+import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.*
 
 @Composable
 fun ConsumoChart(
@@ -56,6 +61,7 @@ fun ConsumoChart(
         return
     }
 
+    // Crear entradas del gráfico con fechas reales
     val chartEntries = eventos.mapIndexed { index, evento ->
         entryOf(
             x = index.toFloat(),
@@ -64,6 +70,11 @@ fun ConsumoChart(
     }
 
     val chartEntryModelProducer = remember { ChartEntryModelProducer(chartEntries) }
+
+    // Crear formateador de eje X basado en el tipo de período
+    val xAxisFormatter = remember(tipoPeriodo) {
+        createXAxisFormatter(eventos, tipoPeriodo)
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         Text(
@@ -77,7 +88,9 @@ fun ConsumoChart(
             chart = columnChart(),
             chartModelProducer = chartEntryModelProducer,
             startAxis = startAxis(),
-            bottomAxis = bottomAxis(),
+            bottomAxis = bottomAxis(
+                valueFormatter = xAxisFormatter
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
@@ -120,6 +133,7 @@ fun ConsumoLineChart(
         return
     }
 
+    // Crear entradas del gráfico con fechas reales
     val chartEntries = eventos.mapIndexed { index, evento ->
         entryOf(
             x = index.toFloat(),
@@ -128,6 +142,11 @@ fun ConsumoLineChart(
     }
 
     val chartEntryModelProducer = remember { ChartEntryModelProducer(chartEntries) }
+
+    // Crear formateador de eje X basado en el tipo de período
+    val xAxisFormatter = remember(tipoPeriodo) {
+        createXAxisFormatter(eventos, tipoPeriodo)
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         Text(
@@ -141,12 +160,50 @@ fun ConsumoLineChart(
             chart = lineChart(),
             chartModelProducer = chartEntryModelProducer,
             startAxis = startAxis(),
-            bottomAxis = bottomAxis(),
+            bottomAxis = bottomAxis(
+                valueFormatter = xAxisFormatter
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
                 .padding(16.dp)
         )
+    }
+}
+
+private fun createXAxisFormatter(eventos: List<Evento>, tipoPeriodo: TipoPeriodo): AxisValueFormatter<AxisPosition.Horizontal.Bottom> {
+    return AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
+        val index = value.toInt()
+        if (index >= 0 && index < eventos.size) {
+            val evento = eventos[index]
+            when (tipoPeriodo) {
+                TipoPeriodo.DIAS -> {
+                    // Mostrar fecha en formato dd/MM
+                    evento.fecha?.let { fecha ->
+                        try {
+                            val localDate = LocalDate.parse(fecha)
+                            localDate.format(DateTimeFormatter.ofPattern("dd/MM"))
+                        } catch (e: Exception) {
+                            fecha
+                        }
+                    } ?: index.toString()
+                }
+                TipoPeriodo.MESES -> {
+                    // Mostrar mes y año
+                    evento.mes_nombre?.let { mes ->
+                        evento.anio?.let { anio ->
+                            "$mes $anio"
+                        } ?: mes
+                    } ?: index.toString()
+                }
+                TipoPeriodo.ANIOS -> {
+                    // Mostrar solo año
+                    evento.anio?.toString() ?: index.toString()
+                }
+            }
+        } else {
+            index.toString()
+        }
     }
 }
 
