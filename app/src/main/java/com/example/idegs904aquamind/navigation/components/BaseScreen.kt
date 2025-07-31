@@ -41,6 +41,14 @@ fun BaseScreen(
     // Solo mostrar drawer en pantallas principales (no en login)
     val showDrawer = screen != Screen.Login
     
+    // Función para manejar el logout
+    val handleLogout = {
+        // Navegar al login y limpiar el stack
+        navController.navigate(Screen.Login.route) {
+            popUpTo(0) { inclusive = true }
+        }
+    }
+    
     Box(modifier = Modifier.fillMaxSize()) {
         // Contenido principal
         Scaffold(
@@ -111,6 +119,9 @@ fun BaseScreen(
                             },
                             onCloseDrawer = {
                                 isDrawerOpen = false
+                            },
+                            onLogout = {
+                                handleLogout()
                             }
                         )
                     }

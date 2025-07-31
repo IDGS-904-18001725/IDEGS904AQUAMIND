@@ -21,6 +21,7 @@ import com.example.idegs904aquamind.navigation.Screen
 fun DrawerContent(
     onItemClick: (Screen) -> Unit,
     onCloseDrawer: () -> Unit,
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -41,7 +42,7 @@ fun DrawerContent(
         
         // Lista de elementos del drawer
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(drawerItems) { item ->
@@ -51,6 +52,48 @@ fun DrawerContent(
                         onItemClick(item.screen)
                         onCloseDrawer()
                     }
+                )
+            }
+        }
+        
+        // Separador antes del botón de cerrar sesión
+        Divider(
+            color = Color(0xFF039BE5),
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        
+        // Botón de cerrar sesión
+        Surface(
+            onClick = {
+                onLogout()
+                onCloseDrawer()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.Transparent
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Icono
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = "Cerrar sesión",
+                    tint = Color.Red.copy(alpha = 0.8f),
+                    modifier = Modifier.size(24.dp)
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                // Título
+                Text(
+                    text = "Cerrar Sesión",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Red.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

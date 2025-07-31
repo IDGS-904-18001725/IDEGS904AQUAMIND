@@ -120,9 +120,17 @@ class PerfilViewModel(
     fun cerrarSesion() {
         viewModelScope.launch {
             try {
+                _uiState.value = PerfilUiState.Loading
+                
                 // Limpiar sesión
                 sessionManager.clearSession()
+                
+                // Limpiar datos del usuario
+                _usuario.value = null
+                idUsuarioActual = 0
+                
                 _uiState.value = PerfilUiState.CerrandoSesion
+                
                 // Emitir evento de navegación
                 _navigationEvent.value = PerfilNavigationEvent.NavigateToLogin
                 

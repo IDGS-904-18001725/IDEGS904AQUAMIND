@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.idegs904aquamind.features.perfil.utils.ImageUtils
 
 @Composable
@@ -67,10 +68,14 @@ fun ImagePicker(
                         contentScale = ContentScale.Crop
                     )
                 }
-                currentImageBase64 != null -> {
+                currentImageBase64 != null && currentImageBase64.isNotBlank() -> {
                     // Mostrar imagen actual desde Base64
                     Image(
-                        painter = rememberAsyncImagePainter(currentImageBase64),
+                        painter = rememberAsyncImagePainter(
+                            ImageRequest.Builder(context)
+                                .data(currentImageBase64)
+                                .build()
+                        ),
                         contentDescription = "Imagen de perfil actual",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop

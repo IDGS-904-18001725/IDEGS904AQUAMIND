@@ -22,8 +22,11 @@ object ImageUtils {
             val bitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
             
+            // Redimensionar la imagen para optimizar el tamaño
+            val resizedBitmap = resizeBitmap(bitmap, 512, 512)
+            
             val byteArrayOutputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
             val byteArray = byteArrayOutputStream.toByteArray()
             
             val base64 = Base64.encodeToString(byteArray, Base64.DEFAULT)
@@ -38,8 +41,11 @@ object ImageUtils {
      * Convierte un Bitmap a Base64
      */
     fun convertBitmapToBase64(bitmap: Bitmap): String {
+        // Redimensionar la imagen para optimizar el tamaño
+        val resizedBitmap = resizeBitmap(bitmap, 512, 512)
+        
         val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         
         val base64 = Base64.encodeToString(byteArray, Base64.DEFAULT)
@@ -52,6 +58,11 @@ object ImageUtils {
     fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
         val width = bitmap.width
         val height = bitmap.height
+        
+        // Si la imagen ya es más pequeña que el máximo, no redimensionar
+        if (width <= maxWidth && height <= maxHeight) {
+            return bitmap
+        }
         
         val ratioBitmap = width.toFloat() / height.toFloat()
         val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
@@ -66,5 +77,23 @@ object ImageUtils {
         }
         
         return Bitmap.createScaledBitmap(bitmap, finalWidth, finalHeight, true)
+    }
+    
+    /**
+     * Verifica si una cadena es un Base64 válido
+     */
+    fun isValidBase64(base64: String): Boolean {
+        return try {
+            if (base64.startsWith("data:image/")) {
+                val dataPart = base64.substring(base64.indexOf(",") + 1)
+                Base64.decode(dataPart, Base64.DEFAULT)
+                true
+            } else {
+                Base64.decode(base64, Base64.DEFAULT)
+                true
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 } 

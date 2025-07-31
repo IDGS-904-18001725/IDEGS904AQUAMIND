@@ -41,6 +41,12 @@ fun EditarPerfilScreen(
     var apellidoPaternoError by remember { mutableStateOf("") }
     var apellidoMaternoError by remember { mutableStateOf("") }
     
+    // Función para manejar la selección de imagen
+    val handleImageSelected = { base64: String ->
+        imagenSeleccionada = base64
+        onImageSelected(base64)
+    }
+    
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -85,11 +91,8 @@ fun EditarPerfilScreen(
         ) {
             // Selector de imagen
             ImagePicker(
-                currentImageBase64 = usuario.imagen_perfil,
-                onImageSelected = { base64 ->
-                    imagenSeleccionada = base64
-                    onImageSelected(base64)
-                },
+                currentImageBase64 = imagenSeleccionada ?: usuario.imagen_perfil,
+                onImageSelected = handleImageSelected,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             

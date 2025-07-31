@@ -28,6 +28,7 @@ fun PerfilScreen(
     val usuario by viewModel.usuario.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
     var mostrarEditarPerfil by remember { mutableStateOf(false) }
+    var mostrarSnackbar by remember { mutableStateOf<String?>(null) }
     
     // Observar cambios en el estado
     LaunchedEffect(uiState) {
@@ -36,7 +37,13 @@ fun PerfilScreen(
                 // La navegación se maneja a través de navigationEvent
             }
             is PerfilUiState.Error -> {
-                // TODO: Mostrar snackbar con error
+                mostrarSnackbar = (uiState as PerfilUiState.Error).message
+            }
+            is PerfilUiState.Success -> {
+                // Limpiar mensajes de error si hay éxito
+                if (mostrarSnackbar != null) {
+                    mostrarSnackbar = null
+                }
             }
             else -> {}
         }
@@ -106,7 +113,16 @@ fun PerfilScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator()
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = if (uiState is PerfilUiState.CerrandoSesion) "Cerrando sesión..." else "Cargando...",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
                 is PerfilUiState.Success -> {
@@ -140,7 +156,7 @@ fun PerfilScreen(
                             )
                             
                             // Imagen de perfil (si existe)
-                            if (user.imagen_perfil != null) {
+                            if (user.imagen_perfil != null && user.imagen_perfil.isNotBlank()) {
                                 PerfilCard(
                                     titulo = "Imagen de Perfil",
                                     items = listOf(
@@ -188,7 +204,8 @@ fun PerfilScreen(
                         ) {
                             Text(
                                 text = (uiState as PerfilUiState.Error).message,
-                                color = Color.Red
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
@@ -201,6 +218,16 @@ fun PerfilScreen(
                 }
                 else -> {}
             }
+        }
+    }
+    
+    // Snackbar para mostrar mensajes
+    mostrarSnackbar?.let { message ->
+        LaunchedEffect(message) {
+            // Aquí podrías mostrar un Snackbar si lo implementas
+            // Por ahora solo limpiamos el mensaje después de un tiempo
+            kotlinx.coroutines.delay(3000)
+            mostrarSnackbar = null
         }
     }
 }

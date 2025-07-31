@@ -160,13 +160,21 @@ fun AppNavHost(
             }
         }
 
-        // 14) Perfil
+        // 14) Perfil - con manejo de navegación al login
         composable(Screen.Perfil.route) {
             BaseScreen(
                 screen = Screen.Perfil,
                 navController = navController
             ) { padding ->
-                PerfilScreen(modifier = Modifier.padding(padding))
+                PerfilScreen(
+                    modifier = Modifier.padding(padding),
+                    onNavigateToLogin = {
+                        // Limpiar todo el stack de navegación y ir al login
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
 
