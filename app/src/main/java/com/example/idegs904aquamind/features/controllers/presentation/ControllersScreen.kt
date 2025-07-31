@@ -37,13 +37,19 @@ fun ControllersScreen(modifier: Modifier = Modifier) {
                 }
             }
             is ControllersUiState.Success -> {
+                val nodosWithLoading by viewModel.nodosWithLoading.collectAsState()
+                
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(state.nodos) { nodo ->
-                        NodoCard(nodo = nodo)
+                    items(nodosWithLoading) { nodoWithLoading ->
+                        NodoCard(
+                            nodo = nodoWithLoading.nodo,
+                            onToggleClick = { viewModel.toggleNodoEstatus(nodoWithLoading.nodo) },
+                            isLoading = nodoWithLoading.isLoading
+                        )
                     }
                 }
             }

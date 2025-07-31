@@ -8,6 +8,7 @@ import com.example.idegs904aquamind.data.model.FechaRequest
 import com.example.idegs904aquamind.data.model.Recomendacion
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.data.model.MarcarLeidaRequest
+import com.example.idegs904aquamind.data.model.ControlRequest
 import com.example.idegs904aquamind.features.perfil.data.model.Usuario
 import com.example.idegs904aquamind.features.perfil.data.model.ActualizarUsuarioRequest
 import retrofit2.http.Body
@@ -96,4 +97,10 @@ interface ApiService {
         @Path("id") id: Int,
         @Body request: ActualizarUsuarioRequest
     ): Usuario
+
+    /**
+     * Controla un dispositivo MQTT
+     */
+    @POST("mqtt/control")
+    suspend fun controlDevice(@Body request: ControlRequest): retrofit2.Response<Unit>
 }

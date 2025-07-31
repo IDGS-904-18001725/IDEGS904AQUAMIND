@@ -5,6 +5,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.InvertColors
+import androidx.compose.material.icons.filled.Power
+import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,10 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.idegs904aquamind.data.model.Nodo
+import com.example.idegs904aquamind.features.controllers.data.DeviceCommandMapper
 
 @Composable
 fun NodoCard(
     nodo: Nodo,
+    onToggleClick: (() -> Unit)? = null,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -58,6 +63,67 @@ fun NodoCard(
                 )
             }
             StatusChip(estatus = nodo.id_estatus)
+            
+            // Botón de toggle (solo mostrar si el dispositivo está mapeado)
+            if (onToggleClick != null && isDeviceMapped(nodo.descripcion)) {
+                Spacer(Modifier.width(8.dp))
+                ToggleButton(
+                    isActive = nodo.id_estatus == 1,
+                    isLoading = isLoading,
+                    onToggleClick = onToggleClick
+                )
+            }
+        }
+    }
+}
+
+private fun isDeviceMapped(descripcion: String): Boolean {
+    val mapper = DeviceCommandMapper()
+    return mapper.isDeviceMapped(descripcion)
+}
+
+@Composable
+fun ToggleButton(
+    isActive: Boolean,
+    isLoading: Boolean,
+    onToggleClick: () -> Unit
+) {
+    val backgroundColor = if (isActive) {
+        Color(0xFF4CAF50) // Verde para activo
+    } else {
+        Color(0xFFF44336) // Rojo para inactivo
+    }
+    
+    val icon = if (isActive) {
+        Icons.Filled.Power
+    } else {
+        Icons.Filled.PowerOff
+    }
+    
+    val iconTint = Color.White
+    
+    Button(
+        onClick = onToggleClick,
+        enabled = !isLoading,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = backgroundColor,
+            disabledContainerColor = backgroundColor.copy(alpha = 0.6f)
+        ),
+        modifier = Modifier.size(48.dp)
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = if (isActive) "Desactivar" else "Activar",
+                tint = iconTint,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
