@@ -5,6 +5,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +20,8 @@ fun AppHeader(
     modifier: Modifier = Modifier,
     title: String = "AquaMind",
     onMenuClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    isAdmin: Boolean = false
 ) {
     Row(
         modifier = modifier
@@ -63,8 +65,8 @@ fun AppHeader(
         ) {
             IconButton(onClick = onProfileClick) {
                 Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Perfil",
+                    imageVector = if (isAdmin) Icons.Default.AdminPanelSettings else Icons.Default.Person,
+                    contentDescription = if (isAdmin) "Perfil Administrador" else "Perfil",
                     tint = Color(0xFF1565C0)
                 )
             }

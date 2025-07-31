@@ -7,6 +7,8 @@ import android.net.Uri
 import android.util.Base64
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Utilidades para manejo de imágenes
@@ -94,6 +96,42 @@ object ImageUtils {
             }
         } catch (e: Exception) {
             false
+        }
+    }
+    
+    /**
+     * Formatea una fecha para mostrar solo la fecha sin hora
+     */
+    fun formatDateOnly(dateString: String?): String {
+        if (dateString.isNullOrBlank()) return "No disponible"
+        
+        return try {
+            // Intentar diferentes formatos de fecha
+            val formats = listOf(
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                "yyyy-MM-dd",
+                "dd/MM/yyyy",
+                "MM/dd/yyyy"
+            )
+            
+            for (format in formats) {
+                try {
+                    val parser = SimpleDateFormat(format, Locale.getDefault())
+                    val date = parser.parse(dateString)
+                    if (date != null) {
+                        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        return formatter.format(date)
+                    }
+                } catch (e: Exception) {
+                    // Continuar con el siguiente formato
+                }
+            }
+            
+            // Si no se puede parsear, devolver la fecha original
+            dateString
+        } catch (e: Exception) {
+            dateString
         }
     }
 } 

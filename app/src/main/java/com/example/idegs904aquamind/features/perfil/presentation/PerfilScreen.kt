@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.idegs904aquamind.features.perfil.data.model.TipoUsuario
+import com.example.idegs904aquamind.features.perfil.utils.ImageUtils
 
 @Composable
 fun PerfilScreen(
@@ -65,14 +66,14 @@ fun PerfilScreen(
             usuario = usuario!!,
             onGuardar = { request ->
                 viewModel.actualizarUsuario(request)
+                // Recargar datos después de guardar para asegurar que se muestre la imagen actualizada
+                viewModel.recargarUsuario()
                 mostrarEditarPerfil = false
             },
             onCancelar = {
                 mostrarEditarPerfil = false
             },
-            onImageSelected = { base64 ->
-                viewModel.actualizarImagenPerfil(base64)
-            }
+
         )
     } else {
         Column(
@@ -139,7 +140,7 @@ fun PerfilScreen(
                                 items = listOf(
                                     "Nombre: ${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}",
                                     "Email: ${user.correo_electronico}",
-                                    "Fecha de Nacimiento: ${user.fecha_nacimiento}",
+                                    "Fecha de Nacimiento: ${ImageUtils.formatDateOnly(user.fecha_nacimiento)}",
                                     "Tipo de Usuario: ${TipoUsuario.getNombreById(user.id_tipo_usuario)}"
                                 )
                             )
@@ -151,7 +152,7 @@ fun PerfilScreen(
                                     "Usuario: ${user.username}",
                                     "ID: ${user.id_usuario}",
                                     "Estado: ${if (user.id_estatus == 1) "Activo" else "Inactivo"}",
-                                    "Fecha de Registro: ${user.fecha_registro ?: "No disponible"}"
+                                    "Fecha de Registro: ${ImageUtils.formatDateOnly(user.fecha_registro)}"
                                 )
                             )
                             

@@ -18,10 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.example.idegs904aquamind.navigation.Screen
+import com.example.idegs904aquamind.auth.data.SessionManager
+import com.example.idegs904aquamind.features.perfil.data.model.TipoUsuario
 import kotlinx.coroutines.launch
 
 /**
@@ -40,6 +43,12 @@ fun BaseScreen(
     
     // Solo mostrar drawer en pantallas principales (no en login)
     val showDrawer = screen != Screen.Login
+    
+    // Obtener datos del usuario para determinar si es admin
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val user = remember { sessionManager.getUser() }
+    val isAdmin = user?.let { it.id == 1 } ?: false // Asumiendo que ID 1 es admin
     
     // Función para manejar el logout
     val handleLogout = {
@@ -62,7 +71,8 @@ fun BaseScreen(
                     },
                     onProfileClick = {
                         navController.navigate(Screen.Perfil.route)
-                    }
+                    },
+                    isAdmin = isAdmin
                 )
             },
             bottomBar = { BottomNavBar(navController) }

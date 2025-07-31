@@ -26,7 +26,6 @@ fun EditarPerfilScreen(
     usuario: Usuario,
     onGuardar: (ActualizarUsuarioRequest) -> Unit,
     onCancelar: () -> Unit,
-    onImageSelected: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var nombre by remember { mutableStateOf(usuario.nombre) }
@@ -34,18 +33,14 @@ fun EditarPerfilScreen(
     var apellidoMaterno by remember { mutableStateOf(usuario.apellido_materno) }
     var fechaNacimiento by remember { mutableStateOf(usuario.fecha_nacimiento) }
     var idTipoUsuario by remember { mutableStateOf(usuario.id_tipo_usuario) }
-    var imagenSeleccionada by remember { mutableStateOf<String?>(null) }
     
     // Validaciones
     var nombreError by remember { mutableStateOf("") }
     var apellidoPaternoError by remember { mutableStateOf("") }
     var apellidoMaternoError by remember { mutableStateOf("") }
     
-    // Función para manejar la selección de imagen
-    val handleImageSelected = { base64: String ->
-        imagenSeleccionada = base64
-        onImageSelected(base64)
-    }
+    // Determinar si es administrador
+    val isAdmin = usuario.id_tipo_usuario == TipoUsuario.ADMINISTRADOR.id
     
     Column(
         modifier = modifier
@@ -89,10 +84,9 @@ fun EditarPerfilScreen(
                 .padding(bottom = 80.dp), // Espacio para BottomNavBar
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Selector de imagen
+            // Avatar del usuario
             ImagePicker(
-                currentImageBase64 = imagenSeleccionada ?: usuario.imagen_perfil,
-                onImageSelected = handleImageSelected,
+                isAdmin = isAdmin,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             
@@ -223,8 +217,7 @@ fun EditarPerfilScreen(
                                 apellido_paterno = apellidoPaterno,
                                 apellido_materno = apellidoMaterno,
                                 fecha_nacimiento = fechaNacimiento,
-                                id_tipo_usuario = if (usuario.id_tipo_usuario == 1) idTipoUsuario else null,
-                                imagen_perfil = imagenSeleccionada
+                                id_tipo_usuario = if (usuario.id_tipo_usuario == 1) idTipoUsuario else null
                             )
                             onGuardar(request)
                         } else {
