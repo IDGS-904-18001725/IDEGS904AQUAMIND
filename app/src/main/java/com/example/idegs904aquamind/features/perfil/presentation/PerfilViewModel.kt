@@ -38,6 +38,10 @@ class PerfilViewModel(
     private val _usuario = MutableStateFlow<Usuario?>(null)
     val usuario: StateFlow<Usuario?> = _usuario.asStateFlow()
     
+    // Eventos de navegación
+    private val _navigationEvent = MutableStateFlow<PerfilNavigationEvent?>(null)
+    val navigationEvent: StateFlow<PerfilNavigationEvent?> = _navigationEvent.asStateFlow()
+    
     // ID del usuario actual (se obtiene del SessionManager)
     private var idUsuarioActual: Int = 0
     
@@ -119,6 +123,8 @@ class PerfilViewModel(
                 // Limpiar sesión
                 sessionManager.clearSession()
                 _uiState.value = PerfilUiState.CerrandoSesion
+                // Emitir evento de navegación
+                _navigationEvent.value = PerfilNavigationEvent.NavigateToLogin
                 
             } catch (e: Exception) {
                 _uiState.value = PerfilUiState.Error(e.message ?: "Error al cerrar sesión")
@@ -131,6 +137,13 @@ class PerfilViewModel(
      */
     fun recargarUsuario() {
         cargarUsuario()
+    }
+    
+    /**
+     * Limpia el evento de navegación
+     */
+    fun clearNavigationEvent() {
+        _navigationEvent.value = null
     }
 }
 

@@ -17,8 +17,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.idegs904aquamind.features.perfil.data.model.Usuario
 import com.example.idegs904aquamind.features.perfil.data.model.ActualizarUsuarioRequest
+import com.example.idegs904aquamind.features.perfil.data.model.TipoUsuario
 import com.example.idegs904aquamind.features.perfil.presentation.components.ImagePicker
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarPerfilScreen(
     usuario: Usuario,
@@ -77,7 +79,8 @@ fun EditarPerfilScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(16.dp)
+                .padding(bottom = 80.dp), // Espacio para BottomNavBar
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Selector de imagen
@@ -133,25 +136,47 @@ fun EditarPerfilScreen(
             )
             
             // Campo condicional para tipo de usuario
-            if (usuario.id_tipo_usuario == 1) { // Si es administrador
-                CampoEditable(
-                    label = "Tipo de Usuario",
-                    value = idTipoUsuario.toString(),
-                    onValueChange = { 
-                        idTipoUsuario = it.toIntOrNull() ?: usuario.id_tipo_usuario 
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            if (usuario.id_tipo_usuario == TipoUsuario.ADMINISTRADOR.id) { // Si es administrador
+                // Dropdown para seleccionar tipo de usuario
+                var expanded by remember { mutableStateOf(false) }
+                val tiposUsuario = TipoUsuario.values()
+                
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded },
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    OutlinedTextField(
+                        value = TipoUsuario.getNombreById(idTipoUsuario),
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Tipo de Usuario") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        tiposUsuario.forEach { tipo ->
+                            DropdownMenuItem(
+                                text = { Text(tipo.nombre) },
+                                onClick = {
+                                    idTipoUsuario = tipo.id
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             } else {
                 // Mostrar como solo lectura si no es admin
                 CampoBloqueado(
                     label = "Tipo de Usuario",
-                    value = when (usuario.id_tipo_usuario) {
-                        1 -> "Administrador"
-                        2 -> "Usuario"
-                        else -> "Desconocido"
-                    },
+                    value = TipoUsuario.getNombreById(usuario.id_tipo_usuario),
                     modifier = Modifier.fillMaxWidth()
                 )
             }

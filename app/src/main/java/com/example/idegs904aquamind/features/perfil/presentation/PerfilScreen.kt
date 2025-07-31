@@ -14,26 +14,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.idegs904aquamind.features.perfil.data.model.TipoUsuario
 
 @Composable
 fun PerfilScreen(
     modifier: Modifier = Modifier,
     viewModel: PerfilViewModel = viewModel(
         factory = PerfilViewModelFactory(LocalContext.current)
-    )
+    ),
+    onNavigateToLogin: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val usuario by viewModel.usuario.collectAsState()
+    val navigationEvent by viewModel.navigationEvent.collectAsState()
     var mostrarEditarPerfil by remember { mutableStateOf(false) }
     
     // Observar cambios en el estado
     LaunchedEffect(uiState) {
         when (uiState) {
             is PerfilUiState.CerrandoSesion -> {
-                // TODO: Navegar a LoginScreen
+                // La navegación se maneja a través de navigationEvent
             }
             is PerfilUiState.Error -> {
                 // TODO: Mostrar snackbar con error
+            }
+            else -> {}
+        }
+    }
+    
+    // Observar eventos de navegación
+    LaunchedEffect(navigationEvent) {
+        when (navigationEvent) {
+            is PerfilNavigationEvent.NavigateToLogin -> {
+                onNavigateToLogin()
+                viewModel.clearNavigationEvent()
             }
             else -> {}
         }
@@ -110,7 +124,7 @@ fun PerfilScreen(
                                     "Nombre: ${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}",
                                     "Email: ${user.correo_electronico}",
                                     "Fecha de Nacimiento: ${user.fecha_nacimiento}",
-                                    "Tipo de Usuario: ${if (user.id_tipo_usuario == 1) "Administrador" else "Usuario"}"
+                                    "Tipo de Usuario: ${TipoUsuario.getNombreById(user.id_tipo_usuario)}"
                                 )
                             )
                             
