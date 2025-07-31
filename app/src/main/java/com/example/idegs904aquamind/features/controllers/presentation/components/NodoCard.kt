@@ -1,15 +1,19 @@
 package com.example.idegs904aquamind.features.controllers.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.InvertColors
-import androidx.compose.material.icons.filled.Power
-import androidx.compose.material.icons.filled.PowerOff
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,75 +27,156 @@ fun NodoCard(
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val isActive = nodo.id_estatus == 1
+    
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = if (isActive) 8.dp else 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = if (isActive) Color(0xFF4CAF50) else Color(0xFFF44336)
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = if (nodo.id_estatus == 1)
-                Color(0xFFE8F5E8) // Verde claro para activo
-            else
-                Color(0xFFFFEBEE) // Rojo claro para apagado
-        )
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = if (isActive) {
+                            listOf(
+                                Color(0xFFE8F5E8),
+                                Color(0xFFC8E6C9)
+                            )
+                        } else {
+                            listOf(
+                                Color(0xFFFFEBEE),
+                                Color(0xFFFFCDD2)
+                            )
+                        }
+                    )
+                )
+                .padding(20.dp)
         ) {
-            Icon(
-                imageVector = Icons.Filled.InvertColors, // Ícono temporal
-                contentDescription = "Nodo de agua",
-                tint = Color(0xFF0277BD),
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = nodo.nombre,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Icono del dispositivo
+                DeviceIcon(
+                    descripcion = nodo.descripcion,
+                    isActive = isActive,
+                    modifier = Modifier.size(48.dp)
                 )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = nodo.descripcion,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "ID: ${nodo.id_nodo}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            }
-            StatusChip(estatus = nodo.id_estatus)
-            
-            // Botón de toggle (solo mostrar si el dispositivo está mapeado)
-            if (onToggleClick != null && isDeviceMapped(nodo.descripcion)) {
-                Spacer(Modifier.width(8.dp))
-                ToggleButton(
-                    isActive = nodo.id_estatus == 1,
-                    isLoading = isLoading,
-                    onToggleClick = onToggleClick
-                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                // Información del dispositivo
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = nodo.nombre,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = nodo.descripcion,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Estado del dispositivo
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        StatusIndicator(isActive = isActive)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isActive) "Activo" else "Inactivo",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isActive) Color(0xFF2E7D32) else Color(0xFFD32F2F)
+                        )
+                    }
+                }
+                
+                // Botón de control
+                if (onToggleClick != null && isDeviceMapped(nodo.descripcion)) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    ElegantToggleButton(
+                        isActive = isActive,
+                        isLoading = isLoading,
+                        onToggleClick = onToggleClick
+                    )
+                }
             }
         }
     }
 }
 
-private fun isDeviceMapped(descripcion: String): Boolean {
-    val mapper = DeviceCommandMapper()
-    return mapper.isDeviceMapped(descripcion)
+@Composable
+private fun DeviceIcon(
+    descripcion: String,
+    isActive: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val icon = when {
+        descripcion.contains("Válvula") -> Icons.Filled.WaterDrop
+        descripcion.contains("Compuerta") -> Icons.Filled.Settings
+        descripcion.contains("Relevador") -> Icons.Filled.ElectricBolt
+        else -> Icons.Filled.DeviceHub
+    }
+    
+    val iconColor = if (isActive) {
+        Color(0xFF2E7D32)
+    } else {
+        Color(0xFFD32F2F)
+    }
+    
+    Box(
+        modifier = modifier
+            .background(
+                color = iconColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = "Dispositivo",
+            tint = iconColor,
+            modifier = Modifier.size(28.dp)
+        )
+    }
 }
 
 @Composable
-fun ToggleButton(
+private fun StatusIndicator(isActive: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(8.dp)
+            .background(
+                color = if (isActive) Color(0xFF4CAF50) else Color(0xFFF44336),
+                shape = RoundedCornerShape(4.dp)
+            )
+    )
+}
+
+@Composable
+private fun ElegantToggleButton(
     isActive: Boolean,
     isLoading: Boolean,
     onToggleClick: () -> Unit
 ) {
     val backgroundColor = if (isActive) {
-        Color(0xFF4CAF50) // Verde para activo
+        Color(0xFF4CAF50)
     } else {
-        Color(0xFFF44336) // Rojo para inactivo
+        Color(0xFFF44336)
     }
     
     val icon = if (isActive) {
@@ -100,8 +185,6 @@ fun ToggleButton(
         Icons.Filled.PowerOff
     }
     
-    val iconTint = Color.White
-    
     Button(
         onClick = onToggleClick,
         enabled = !isLoading,
@@ -109,11 +192,12 @@ fun ToggleButton(
             containerColor = backgroundColor,
             disabledContainerColor = backgroundColor.copy(alpha = 0.6f)
         ),
-        modifier = Modifier.size(48.dp)
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.size(56.dp)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(24.dp),
                 color = Color.White,
                 strokeWidth = 2.dp
             )
@@ -121,30 +205,14 @@ fun ToggleButton(
             Icon(
                 imageVector = icon,
                 contentDescription = if (isActive) "Desactivar" else "Activar",
-                tint = iconTint,
-                modifier = Modifier.size(24.dp)
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
             )
         }
     }
 }
 
-@Composable
-fun StatusChip(estatus: Int) {
-    val (backgroundColor, textColor, text) = when (estatus) {
-        1 -> Triple(Color(0xFF4CAF50), Color.White, "Activa")
-        0 -> Triple(Color(0xFFF44336), Color.White, "Apagada")
-        else -> Triple(Color.Gray, Color.White, "Desconocido")
-    }
-
-    Surface(
-        color = backgroundColor,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor
-        )
-    }
+private fun isDeviceMapped(descripcion: String): Boolean {
+    val mapper = DeviceCommandMapper()
+    return mapper.isDeviceMapped(descripcion)
 } 
