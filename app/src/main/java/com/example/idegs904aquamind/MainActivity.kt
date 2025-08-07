@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import com.example.idegs904aquamind.auth.data.SessionManager
-import com.example.idegs904aquamind.features.notifications.service.NotificationScheduler
+import com.example.idegs904aquamind.features.notifications.service.SimpleNotificationScheduler
 import com.example.idegs904aquamind.features.notifications.utils.NotificationPermissionHelper
 import com.example.idegs904aquamind.navigation.AppNavHost
 import com.example.idegs904aquamind.navigation.Screen
@@ -18,14 +18,14 @@ import com.example.idegs904aquamind.ui.theme.AquaMindTheme
  * - Configura NavController y AppNavHost.
  */
 class MainActivity : FragmentActivity() {
-    private lateinit var notificationScheduler: NotificationScheduler
+    private lateinit var notificationScheduler: SimpleNotificationScheduler
     private lateinit var permissionHelper: NotificationPermissionHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Inicializar helpers
-        notificationScheduler = NotificationScheduler(this)
+        notificationScheduler = SimpleNotificationScheduler(this)
         permissionHelper = NotificationPermissionHelper(this)
 
         // Solicitar permisos de notificación
@@ -48,7 +48,12 @@ class MainActivity : FragmentActivity() {
                     startDestination = startDestination,
                     onLoginSuccess = {
                         // Iniciar verificaciones cuando el usuario inicie sesión
-                        notificationScheduler.iniciarVerificacionesPeriodicas()
+                        try {
+                            notificationScheduler.iniciarVerificacionesPeriodicas()
+                        } catch (e: Exception) {
+                            // Log del error pero no crashear la app
+                            android.util.Log.e("MainActivity", "Error iniciando notificaciones: ${e.message}", e)
+                        }
                     }
                 )
             }

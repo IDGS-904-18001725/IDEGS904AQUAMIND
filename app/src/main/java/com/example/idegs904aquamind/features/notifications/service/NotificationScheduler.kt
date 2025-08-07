@@ -2,14 +2,20 @@ package com.example.idegs904aquamind.features.notifications.service
 
 import android.content.Context
 import android.util.Log
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.ExistingWorkPolicy
+import androidx.work.BackoffPolicy
 import java.util.concurrent.TimeUnit
 
 /**
  * Scheduler para programar verificaciones periódicas de notificaciones.
  * Configurado para demostración con verificación cada 30 segundos.
+ * 
+ * NOTA: WorkManager tiene restricción mínima de 15 minutos para trabajos periódicos,
+ * por lo que usamos OneTimeWorkRequest con retry para intervalos cortos.
  */
 class NotificationScheduler(private val context: Context) {
 
@@ -23,18 +29,30 @@ class NotificationScheduler(private val context: Context) {
 
     /**
      * Inicia las verificaciones periódicas de notificaciones
+     * Usa OneTimeWorkRequest con retry para evitar restricciones de WorkManager
      */
     fun iniciarVerificacionesPeriodicas() {
         try {
             Log.d(TAG, "Iniciando verificaciones periódicas cada $FREQUENCY_SECONDS segundos")
 
-            val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(
-                FREQUENCY_SECONDS, TimeUnit.SECONDS
-            ).build()
+            // Cancelar trabajos existentes
+            workManager.cancelUniqueWork(WORK_NAME)
 
-            workManager.enqueueUniquePeriodicWork(
+            // Crear constraints para asegurar que el trabajo se ejecute
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            // Crear OneTimeWorkRequest que se reprograma a sí mismo
+            val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                .setConstraints(constraints)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+                .build()
+
+            // Programar el trabajo único
+            workManager.enqueueUniqueWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.REPLACE,
+                ExistingWorkPolicy.REPLACE,
                 workRequest
             )
 
@@ -104,9 +122,13 @@ class NotificationScheduler(private val context: Context) {
         try {
             Log.d(TAG, "Ejecutando verificación inmediata")
             
-            val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(
-                1, TimeUnit.MINUTES // Una sola vez
-            ).build()
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                .setConstraints(constraints)
+                .build()
 
             workManager.enqueue(workRequest)
             

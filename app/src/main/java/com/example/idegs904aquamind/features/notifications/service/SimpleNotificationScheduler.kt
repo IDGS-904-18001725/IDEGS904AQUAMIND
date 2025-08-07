@@ -2,55 +2,132 @@ package com.example.idegs904aquamind.features.notifications.service
 
 import android.content.Context
 import android.util.Log
-import androidx.work.*
+import kotlinx.coroutines.*
 import com.example.idegs904aquamind.auth.data.SessionManager
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.features.notifications.data.NotificacionesRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 
 /**
- * Worker que verifica cada 30 segundos si hay nuevas notificaciones no leídas.
- * Para demostración: verificación frecuente sin optimizaciones de batería.
- * 
- * NOTA: Se reprograma a sí mismo cada 30 segundos para evitar restricciones de WorkManager.
+ * Scheduler simple que usa coroutines para verificaciones cada 30 segundos.
+ * Más seguro que usar servicios para evitar crashes.
  */
-class NotificationWorker(
-    private val context: Context,
-    params: WorkerParameters
-) : CoroutineWorker(context, params) {
+class SimpleNotificationScheduler(private val context: Context) {
 
     companion object {
-        private const val TAG = "NotificationWorker"
-        private const val NOTIFICATION_STATUS_NO_LEIDA = 1
+        private const val TAG = "SimpleNotificationScheduler"
         private const val FREQUENCY_SECONDS = 30L
     }
 
+    private var job: Job? = null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val repository = NotificacionesRepository(context)
     private val sessionManager = SessionManager(context)
     private val notificationHelper = NotificationHelper(context)
-    private val workManager = WorkManager.getInstance(context)
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+    /**
+     * Inicia las verificaciones periódicas usando coroutines
+     */
+    fun iniciarVerificacionesPeriodicas() {
         try {
-            Log.d(TAG, "=== INICIANDO VERIFICACIÓN DE NOTIFICACIONES ===")
+            Log.d(TAG, "Iniciando verificaciones periódicas cada $FREQUENCY_SECONDS segundos")
+            
+            // Cancelar job existente si hay uno
+            job?.cancel()
+            
+            // Crear nuevo job
+            job = scope.launch {
+                while (isActive) {
+                    try {
+                        verificarNotificaciones()
+                        delay(FREQUENCY_SECONDS * 1000) // Esperar 30 segundos
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error en verificación: ${e.message}", e)
+                        delay(5000) // Esperar 5 segundos antes de reintentar
+                    }
+                }
+            }
+            
+            Log.d(TAG, "Verificaciones periódicas iniciadas exitosamente")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error iniciando verificaciones periódicas: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Detiene las verificaciones periódicas
+     */
+    fun detenerVerificacionesPeriodicas() {
+        try {
+            Log.d(TAG, "Deteniendo verificaciones periódicas")
+            
+            job?.cancel()
+            job = null
+            
+            Log.d(TAG, "Verificaciones periódicas detenidas")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deteniendo verificaciones periódicas: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Verifica si las verificaciones están activas
+     */
+    fun estanVerificacionesActivas(): Boolean {
+        return job?.isActive == true
+    }
+
+    /**
+     * Obtiene información sobre el estado actual de las verificaciones
+     */
+    fun obtenerEstadoVerificaciones(): String {
+        return if (estanVerificacionesActivas()) {
+            "Coroutine Activa, Frecuencia: $FREQUENCY_SECONDS segundos"
+        } else {
+            "Coroutine Inactiva"
+        }
+    }
+
+    /**
+     * Ejecuta una verificación inmediata (para pruebas)
+     */
+    fun ejecutarVerificacionInmediata() {
+        try {
+            Log.d(TAG, "Ejecutando verificación inmediata")
+            
+            scope.launch {
+                verificarNotificaciones()
+            }
+            
+            Log.d(TAG, "Verificación inmediata ejecutada")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error ejecutando verificación inmediata: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Verifica si hay nuevas notificaciones
+     */
+    private suspend fun verificarNotificaciones() {
+        try {
+            Log.d(TAG, "=== VERIFICANDO NOTIFICACIONES ===")
             
             // Verificar si hay sesión activa
             val token = sessionManager.getToken()
             if (token.isNullOrEmpty()) {
                 Log.d(TAG, "No hay sesión activa, saltando verificación")
-                reprogramarTrabajo()
-                return@withContext Result.success()
+                return
             }
 
             Log.d(TAG, "Sesión activa encontrada, verificando notificaciones...")
 
             // Obtener notificaciones no leídas
-            val notificacionesNoLeidas = repository.getNotificacionesPorEstatus(NOTIFICATION_STATUS_NO_LEIDA)
+            val notificacionesNoLeidas = repository.getNotificacionesPorEstatus(1)
             Log.d(TAG, "Encontradas ${notificacionesNoLeidas.size} notificaciones no leídas")
 
-            // Verificar si hay notificaciones nuevas (comparar con timestamp guardado)
+            // Verificar si hay notificaciones nuevas
             val notificacionesNuevas = obtenerNotificacionesNuevas(notificacionesNoLeidas)
             
             if (notificacionesNuevas.isNotEmpty()) {
@@ -67,48 +144,14 @@ class NotificationWorker(
             } else {
                 Log.d(TAG, "No hay notificaciones nuevas")
             }
-
-            // Reprogramar el trabajo para la próxima verificación
-            reprogramarTrabajo()
-
-            Result.success()
             
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error en verificación de notificaciones: ${e.message}", e)
-            // Reprogramar incluso si hay error
-            reprogramarTrabajo()
-            Result.retry()
-        }
-    }
-
-    /**
-     * Reprograma el trabajo para ejecutarse en 30 segundos
-     */
-    private fun reprogramarTrabajo() {
-        try {
-            Log.d(TAG, "Reprogramando trabajo para ejecutarse en $FREQUENCY_SECONDS segundos")
-            
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
-                .setConstraints(constraints)
-                .setInitialDelay(FREQUENCY_SECONDS, TimeUnit.SECONDS)
-                .build()
-
-            workManager.enqueue(workRequest)
-            
-            Log.d(TAG, "Trabajo reprogramado exitosamente")
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "Error reprogramando trabajo: ${e.message}", e)
         }
     }
 
     /**
      * Filtra las notificaciones que son realmente nuevas
-     * comparando con el timestamp de la última verificación
      */
     private suspend fun obtenerNotificacionesNuevas(
         notificaciones: List<Notificacion>
@@ -116,12 +159,10 @@ class NotificationWorker(
         val timestampUltimaVerificacion = obtenerTimestampUltimaVerificacion()
         
         return notificaciones.filter { notificacion ->
-            // Si no hay timestamp guardado, todas son nuevas
             if (timestampUltimaVerificacion == 0L) {
                 Log.d(TAG, "Primera verificación, todas las notificaciones son nuevas")
                 true
             } else {
-                // Comparar fecha de notificación con timestamp guardado
                 val fechaNotificacion = parsearFechaNotificacion(notificacion.fecha_notificacion)
                 val esNueva = fechaNotificacion > timestampUltimaVerificacion
                 if (esNueva) {
@@ -133,22 +174,21 @@ class NotificationWorker(
     }
 
     /**
-     * Parsea la fecha de notificación al formato timestamp
+     * Parsea la fecha de notificación
      */
     private fun parsearFechaNotificacion(fechaString: String): Long {
         return try {
-            // Formato esperado: "Wed, 30 Jul 2025 11:42:14 GMT"
             val formatter = java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
             val zonedDateTime = java.time.ZonedDateTime.parse(fechaString, formatter)
             zonedDateTime.toInstant().toEpochMilli()
         } catch (e: Exception) {
             Log.e(TAG, "Error parseando fecha: $fechaString", e)
-            System.currentTimeMillis() // Fallback a tiempo actual
+            System.currentTimeMillis()
         }
     }
 
     /**
-     * Obtiene el timestamp de la última verificación desde SharedPreferences
+     * Obtiene el timestamp de la última verificación
      */
     private fun obtenerTimestampUltimaVerificacion(): Long {
         val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)

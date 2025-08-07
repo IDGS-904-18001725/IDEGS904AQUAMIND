@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.idegs904aquamind.features.notifications.service.NotificationScheduler
+import com.example.idegs904aquamind.features.notifications.service.SimpleNotificationScheduler
 import kotlinx.coroutines.delay
 
 @Composable
@@ -17,7 +17,7 @@ fun NotificationStatusCard(
     context: android.content.Context,
     modifier: Modifier = Modifier
 ) {
-    val notificationScheduler = remember { NotificationScheduler(context) }
+    val notificationScheduler = remember { SimpleNotificationScheduler(context) }
     var estadoVerificaciones by remember { mutableStateOf("") }
     var estanActivas by remember { mutableStateOf(false) }
 
