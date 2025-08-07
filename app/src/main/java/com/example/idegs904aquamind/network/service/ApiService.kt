@@ -9,6 +9,8 @@ import com.example.idegs904aquamind.data.model.Recomendacion
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.data.model.MarcarLeidaRequest
 import com.example.idegs904aquamind.data.model.ControlRequest
+import com.example.idegs904aquamind.data.model.Configuracion
+import com.example.idegs904aquamind.data.model.ActualizarConfiguracionRequest
 import com.example.idegs904aquamind.features.perfil.data.model.Usuario
 import com.example.idegs904aquamind.features.perfil.data.model.ActualizarUsuarioRequest
 import retrofit2.http.Body
@@ -103,4 +105,20 @@ interface ApiService {
      */
     @POST("mqtt/control")
     suspend fun controlDevice(@Body request: ControlRequest): retrofit2.Response<Unit>
+
+    // Endpoints de configuraciones
+    /**
+     * Obtiene todas las configuraciones del sistema
+     */
+    @GET("configuraciones/configuracion")
+    suspend fun getConfiguraciones(): List<Configuracion>
+
+    /**
+     * Actualiza una configuración específica
+     */
+    @PUT("configuraciones/configuracion/{id}")
+    suspend fun actualizarConfiguracion(
+        @Path("id") id: Int,
+        @Body request: ActualizarConfiguracionRequest
+    ): Configuracion
 }

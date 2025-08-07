@@ -15,12 +15,16 @@ import com.example.idegs904aquamind.features.eventos.presentation.EventosScreen
 import com.example.idegs904aquamind.features.recomendaciones.presentation.RecomendacionesScreen
 import com.example.idegs904aquamind.features.graficos.presentation.GraficosScreen
 import com.example.idegs904aquamind.features.configuraciones.presentation.ConfiguracionesScreen
+import com.example.idegs904aquamind.features.configuraciones.presentation.ConfiguracionesViewModel
+import com.example.idegs904aquamind.features.configuraciones.presentation.ConfiguracionesViewModelFactory
 import com.example.idegs904aquamind.features.reportes.presentation.ReportesScreen
 import com.example.idegs904aquamind.features.mantenimiento.presentation.MantenimientoScreen
 import com.example.idegs904aquamind.features.soporte.presentation.SoporteScreen
 import com.example.idegs904aquamind.features.ayuda.presentation.AyudaScreen
 import com.example.idegs904aquamind.features.perfil.presentation.PerfilScreen
 import com.example.idegs904aquamind.navigation.components.BaseScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AppNavHost(
@@ -115,11 +119,19 @@ fun AppNavHost(
         // Nuevas rutas del drawer
         // 9) Configuraciones
         composable(Screen.Configuraciones.route) {
+            val context = LocalContext.current
+            val viewModel: ConfiguracionesViewModel = viewModel(
+                factory = ConfiguracionesViewModelFactory(context)
+            )
+            
             BaseScreen(
                 screen = Screen.Configuraciones,
                 navController = navController
             ) { padding ->
-                ConfiguracionesScreen(modifier = Modifier.padding(padding))
+                ConfiguracionesScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(padding)
+                )
             }
         }
 

@@ -7,15 +7,25 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.idegs904aquamind.data.model.Configuracion
+import com.example.idegs904aquamind.features.configuraciones.presentation.components.ConfiguracionInput
 
 @Composable
-fun ConfiguracionesScreen(modifier: Modifier = Modifier) {
+fun ConfiguracionesScreen(
+    viewModel: ConfiguracionesViewModel,
+    modifier: Modifier = Modifier
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -39,10 +49,16 @@ fun ConfiguracionesScreen(modifier: Modifier = Modifier) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Configuraciones",
+                    text = "Configuraciones del Sistema",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Configuración de niveles de agua",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.9f)
                 )
             }
         }
@@ -53,51 +69,93 @@ fun ConfiguracionesScreen(modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Sección de Notificaciones
-            ConfiguracionSeccion(
-                titulo = "Notificaciones",
-                items = listOf(
-                    "Alertas de consumo",
-                    "Recordatorios de mantenimiento",
-                    "Reportes semanales",
-                    "Notificaciones push"
+            // Botón de recargar
+            if (state.error != null) {
+                ErrorCard(
+                    message = state.error!!,
+                    onRetry = { viewModel.cargarConfiguraciones() }
                 )
-            )
+            }
             
-            // Sección de Tema
-            ConfiguracionSeccion(
-                titulo = "Apariencia",
-                items = listOf(
-                    "Tema claro",
-                    "Tema oscuro",
-                    "Tema automático"
+            // Loading state
+            if (state.isLoading) {
+                LoadingCard()
+            } else {
+                // Configuraciones
+                state.configuraciones
+                    .filter { it.id_configuracion in 1..4 }
+                    .forEach { configuracion ->
+                        when (configuracion.id_configuracion) {
+                            1 -> ConfiguracionInput(
+                                configuracion = configuracion,
+                                onValueChange = { valor ->
+                                    viewModel.actualizarConfiguracion(configuracion.id_configuracion, valor)
+                                },
+                                onSave = {
+                                    // El valor se actualiza a través del onValueChange
+                                },
+                                // Sin validaciones para el primer input (solo numérico)
+                                isUpdating = state.isUpdating,
+                                unidadMedida = "CM"
+                            )
+                            2 -> ConfiguracionInput(
+                                configuracion = configuracion,
+                                onValueChange = { valor ->
+                                    viewModel.actualizarConfiguracion(configuracion.id_configuracion, valor)
+                                },
+                                onSave = {
+                                    // El valor se actualiza a través del onValueChange
+                                },
+                                maxValue = 100.0, // Nivel Alto no puede superar 100%
+                                isUpdating = state.isUpdating,
+                                unidadMedida = "%"
+                            )
+                            3 -> ConfiguracionInput(
+                                configuracion = configuracion,
+                                onValueChange = { valor ->
+                                    viewModel.actualizarConfiguracion(configuracion.id_configuracion, valor)
+                                },
+                                onSave = {
+                                    // El valor se actualiza a través del onValueChange
+                                },
+                                maxValue = state.configuraciones.find { it.id_configuracion == 2 }?.valor?.toDoubleOrNull() ?: 100.0,
+                                isUpdating = state.isUpdating,
+                                unidadMedida = "%"
+                            )
+                            4 -> ConfiguracionInput(
+                                configuracion = configuracion,
+                                onValueChange = { valor ->
+                                    viewModel.actualizarConfiguracion(configuracion.id_configuracion, valor)
+                                },
+                                onSave = {
+                                    // El valor se actualiza a través del onValueChange
+                                },
+                                maxValue = state.configuraciones.find { it.id_configuracion == 3 }?.valor?.toDoubleOrNull() ?: 100.0,
+                                isUpdating = state.isUpdating,
+                                unidadMedida = "%"
+                            )
+                        }
+                    }
+            }
+            
+            // Error de actualización
+            if (state.updateError != null) {
+                ErrorCard(
+                    message = state.updateError!!,
+                    onRetry = { viewModel.limpiarErrores() }
                 )
-            )
+            }
             
-            // Sección de Datos
-            ConfiguracionSeccion(
-                titulo = "Datos",
-                items = listOf(
-                    "Sincronización automática",
-                    "Almacenamiento local",
-                    "Exportar datos",
-                    "Limpiar caché"
-                )
-            )
-            
-            // Espacio adicional al final para evitar que el último elemento se corte
+            // Espacio adicional al final
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
-fun ConfiguracionSeccion(
-    titulo: String,
-    items: List<String>
-) {
+fun LoadingCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -105,42 +163,76 @@ fun ConfiguracionSeccion(
         )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = titulo,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Cargando configuraciones...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorCard(
+    message: String,
+    onRetry: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFEBEE)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Error,
+                    contentDescription = "Error",
+                    tint = Color.Red,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Error",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red
+                )
+            }
             
-            items.forEachIndexed { index, item ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = item,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Switch(
-                        checked = false,
-                        onCheckedChange = { /* TODO */ }
-                    )
-                }
-                
-                // Separador entre elementos (excepto el último)
-                if (index < items.size - 1) {
-                    Divider(
-                        modifier = Modifier.padding(top = 8.dp),
-                        color = Color.LightGray.copy(alpha = 0.3f)
-                    )
-                }
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Reintentar"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Reintentar")
             }
         }
     }
