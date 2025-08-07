@@ -25,13 +25,16 @@ import com.example.idegs904aquamind.navigation.components.BaseScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    startDestination: String = Screen.Login.route
+    startDestination: String = Screen.Login.route,
+    onLoginSuccess: () -> Unit = {}
 ) {
     NavHost(navController, startDestination) {
 
         // 1) Login: no usamos BaseScreen porque no lleva barras
         composable(Screen.Login.route) {
             LoginScreen { _ ->
+                // Llamar al callback de login exitoso
+                onLoginSuccess()
                 navController.navigate(Screen.Dashboard.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }

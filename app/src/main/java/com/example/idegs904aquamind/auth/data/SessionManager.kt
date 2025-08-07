@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.idegs904aquamind.data.model.User
+import com.example.idegs904aquamind.features.notifications.service.NotificationScheduler
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -98,5 +99,9 @@ class SessionManager(private val context: Context) {
             prefs.remove(TOKEN_TYPE_KEY)
             prefs.remove(USER_KEY)
         }
+        
+        // Detener verificaciones de notificaciones al cerrar sesión
+        val notificationScheduler = NotificationScheduler(context)
+        notificationScheduler.detenerVerificacionesPeriodicas()
     }
 }

@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.features.notifications.presentation.components.NotificacionCard
 import com.example.idegs904aquamind.features.notifications.presentation.components.NotificacionModal
+import com.example.idegs904aquamind.features.notifications.presentation.components.NotificationStatusCard
+import com.example.idegs904aquamind.features.notifications.service.NotificationHelper
 
 @Composable
 fun NotificationsScreen(modifier: Modifier = Modifier) {
@@ -24,6 +26,8 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
     
     var notificacionSeleccionada by remember { mutableStateOf<Notificacion?>(null) }
     var mostrarModal by remember { mutableStateOf(false) }
+    
+    val notificationHelper = remember { NotificationHelper(context) }
 
     LaunchedEffect(Unit) {
         viewModel.cargarNotificaciones()
@@ -77,6 +81,15 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Card de estado del sistema de notificaciones push
+                        item {
+                            NotificationStatusCard(
+                                context = context,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                        }
+                        
+                        // Lista de notificaciones
                         items(notificaciones) { notificacion ->
                             NotificacionCard(
                                 notificacion = notificacion,
@@ -118,10 +131,21 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                         Spacer(Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.cargarNotificaciones() }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("Reintentar")
+                            Button(
+                                onClick = { viewModel.cargarNotificaciones() }
+                            ) {
+                                Text("Reintentar")
+                            }
+                            
+                            OutlinedButton(
+                                onClick = { notificationHelper.mostrarNotificacionPrueba() }
+                            ) {
+                                Text("Probar Notificación")
+                            }
                         }
                     }
                 }
