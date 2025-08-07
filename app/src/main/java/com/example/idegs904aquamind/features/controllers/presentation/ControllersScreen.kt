@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Power
 import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,7 +47,7 @@ fun ControllersScreen(modifier: Modifier = Modifier) {
             is ControllersUiState.Success -> {
                 ControllersContent(
                     nodosWithLoading = nodosWithLoading,
-                    onRefresh = { viewModel.loadNodos() },
+                    onRefresh = { viewModel.actualizarInmediatamente() },
                     onToggleClick = { nodo -> viewModel.toggleNodoEstatus(nodo) }
                 )
             }
@@ -131,15 +132,28 @@ private fun ControllersHeader(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                    onClick = onRefresh,
-                    modifier = Modifier.size(40.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Indicador de actualización automática
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = "Actualizar",
-                        tint = Color.White
+                        imageVector = Icons.Filled.Sync,
+                        contentDescription = "Actualización automática activa",
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
                     )
+                    
+                    IconButton(
+                        onClick = onRefresh,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Actualizar ahora",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
             

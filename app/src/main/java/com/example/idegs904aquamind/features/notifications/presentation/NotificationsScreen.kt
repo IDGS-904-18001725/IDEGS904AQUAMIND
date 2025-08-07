@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.features.notifications.presentation.components.NotificacionCard
 import com.example.idegs904aquamind.features.notifications.presentation.components.NotificacionModal
-import com.example.idegs904aquamind.features.notifications.presentation.components.NotificationStatusCard
 import com.example.idegs904aquamind.features.notifications.service.NotificationHelper
 
 @Composable
@@ -53,42 +52,61 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.Notifications,
-                                contentDescription = "Sin notificaciones",
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
-                            Spacer(Modifier.height(16.dp))
+                            // Icono más grande y con mejor diseño
+                            Card(
+                                modifier = Modifier.size(120.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                ),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Notifications,
+                                        contentDescription = "Sin notificaciones",
+                                        modifier = Modifier.size(48.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            
+                            // Texto principal
                             Text(
-                                text = "No hay notificaciones",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold
+                                text = "¡Todo está al día!",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            Spacer(Modifier.height(8.dp))
+                            
+                            // Texto secundario
                             Text(
-                                text = "Cuando recibas notificaciones, aparecerán aquí",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                text = "No tienes notificaciones pendientes.\nTe avisaremos cuando lleguen nuevas.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                            
+                            // Botón de prueba (opcional)
+                            OutlinedButton(
+                                onClick = { notificationHelper.mostrarNotificacionPrueba() },
+                                modifier = Modifier.padding(top = 8.dp)
+                            ) {
+                                Text("Probar Notificación")
+                            }
                         }
                     }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Card de estado del sistema de notificaciones push
-                        item {
-                            NotificationStatusCard(
-                                context = context,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                        }
-                        
                         // Lista de notificaciones
                         items(notificaciones) { notificacion ->
                             NotificacionCard(
@@ -110,33 +128,56 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Notifications,
-                            contentDescription = "Error",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(Modifier.height(16.dp))
+                        // Icono de error con mejor diseño
+                        Card(
+                            modifier = Modifier.size(120.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                            ),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Notifications,
+                                    contentDescription = "Error",
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        
+                        // Texto principal
                         Text(
-                            text = "Error al cargar notificaciones",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
+                            text = "Oops, algo salió mal",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(Modifier.height(8.dp))
+                        
+                        // Texto secundario
                         Text(
-                            text = (uiState as NotificacionesUiState.Error).message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            text = "No pudimos cargar las notificaciones.\nVerifica tu conexión e intenta de nuevo.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
-                        Spacer(Modifier.height(16.dp))
+                        
+                        // Botones de acción
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Button(
-                                onClick = { viewModel.cargarNotificaciones() }
+                                onClick = { viewModel.cargarNotificaciones() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
                             ) {
                                 Text("Reintentar")
                             }

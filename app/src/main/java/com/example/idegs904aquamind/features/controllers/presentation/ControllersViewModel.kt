@@ -7,6 +7,7 @@ import com.example.idegs904aquamind.data.model.Nodo
 import com.example.idegs904aquamind.features.controllers.data.ControllersRepository
 import com.example.idegs904aquamind.features.controllers.domain.GetNodosUseCase
 import com.example.idegs904aquamind.features.controllers.domain.ControlDeviceUseCase
+import com.example.idegs904aquamind.features.controllers.service.ControllersUpdateScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class ControllersViewModel(context: Context) : ViewModel() {
     private val repository = ControllersRepository(context)
     private val getNodosUseCase = GetNodosUseCase(repository)
     private val controlDeviceUseCase = ControlDeviceUseCase(repository)
+    private val controllersScheduler = ControllersUpdateScheduler(context)
 
     private val _uiState = MutableStateFlow<ControllersUiState>(ControllersUiState.Loading)
     val uiState: StateFlow<ControllersUiState> = _uiState
@@ -39,8 +41,25 @@ class ControllersViewModel(context: Context) : ViewModel() {
                 val nodos = getNodosUseCase()
                 _uiState.value = ControllersUiState.Success(nodos)
                 _nodosWithLoading.value = nodos.map { NodoWithLoadingState(it) }
+                
+                // Iniciar actualizaciones automáticas
+                iniciarActualizacionesAutomaticas()
             } catch (e: Exception) {
                 _uiState.value = ControllersUiState.Error(e.message ?: "Error desconocido")
+            }
+        }
+    }
+    
+    private fun iniciarActualizacionesAutomaticas() {
+        controllersScheduler.iniciarActualizacionesPeriodicas { nodosActualizados ->
+            viewModelScope.launch {
+                try {
+                    _uiState.value = ControllersUiState.Success(nodosActualizados)
+                    _nodosWithLoading.value = nodosActualizados.map { NodoWithLoadingState(it) }
+                } catch (e: Exception) {
+                    // No cambiar el estado si hay error en la actualización automática
+                    // Solo log del error
+                }
             }
         }
     }
@@ -103,5 +122,19 @@ class ControllersViewModel(context: Context) : ViewModel() {
             currentNodos[index] = currentNodos[index].copy(isLoading = isLoading)
             _nodosWithLoading.value = currentNodos
         }
+    }
+    
+    /**
+     * Detiene las actualizaciones automáticas
+     */
+    fun detenerActualizacionesAutomaticas() {
+        controllersScheduler.detenerActualizacionesPeriodicas()
+    }
+    
+    /**
+     * Ejecuta una actualización inmediata
+     */
+    fun actualizarInmediatamente() {
+        controllersScheduler.ejecutarActualizacionInmediata()
     }
 } 
