@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import com.example.idegs904aquamind.auth.data.SessionManager
 import com.example.idegs904aquamind.data.model.Notificacion
 import com.example.idegs904aquamind.features.notifications.data.NotificacionesRepository
+import com.example.idegs904aquamind.features.configuraciones.data.ConfiguracionesLocalManager
 
 /**
  * Scheduler simple que usa coroutines para verificaciones cada 30 segundos.
@@ -15,7 +16,7 @@ class SimpleNotificationScheduler(private val context: Context) {
 
     companion object {
         private const val TAG = "SimpleNotificationScheduler"
-        private const val FREQUENCY_SECONDS = 30L
+        private const val DEFAULT_FREQUENCY_SECONDS = 30L
     }
 
     private var job: Job? = null
@@ -23,13 +24,16 @@ class SimpleNotificationScheduler(private val context: Context) {
     private val repository = NotificacionesRepository(context)
     private val sessionManager = SessionManager(context)
     private val notificationHelper = NotificationHelper(context)
+    private val configuracionesLocalManager = ConfiguracionesLocalManager(context)
 
     /**
      * Inicia las verificaciones periódicas usando coroutines
      */
     fun iniciarVerificacionesPeriodicas() {
         try {
-            Log.d(TAG, "Iniciando verificaciones periódicas cada $FREQUENCY_SECONDS segundos")
+            // Obtener frecuencia configurada
+            val frecuencia = configuracionesLocalManager.getFrecuenciaNotificaciones().toLong()
+            Log.d(TAG, "Iniciando verificaciones periódicas cada $frecuencia segundos")
             
             // Cancelar job existente si hay uno
             job?.cancel()
@@ -38,8 +42,10 @@ class SimpleNotificationScheduler(private val context: Context) {
             job = scope.launch {
                 while (isActive) {
                     try {
+                        Log.d(TAG, "Ejecutando verificación de notificaciones")
                         verificarNotificaciones()
-                        delay(FREQUENCY_SECONDS * 1000) // Esperar 30 segundos
+                        Log.d(TAG, "Esperando $frecuencia segundos hasta la próxima verificación")
+                        delay(frecuencia * 1000) // Esperar según la frecuencia configurada
                     } catch (e: Exception) {
                         Log.e(TAG, "Error en verificación: ${e.message}", e)
                         delay(5000) // Esperar 5 segundos antes de reintentar
@@ -47,7 +53,7 @@ class SimpleNotificationScheduler(private val context: Context) {
                 }
             }
             
-            Log.d(TAG, "Verificaciones periódicas iniciadas exitosamente")
+            Log.d(TAG, "Verificaciones periódicas iniciadas exitosamente con frecuencia: $frecuencia segundos")
             
         } catch (e: Exception) {
             Log.e(TAG, "Error iniciando verificaciones periódicas: ${e.message}", e)
@@ -83,10 +89,18 @@ class SimpleNotificationScheduler(private val context: Context) {
      */
     fun obtenerEstadoVerificaciones(): String {
         return if (estanVerificacionesActivas()) {
-            "Coroutine Activa, Frecuencia: $FREQUENCY_SECONDS segundos"
+            val frecuencia = configuracionesLocalManager.getFrecuenciaNotificaciones()
+            "Coroutine Activa, Frecuencia: $frecuencia segundos"
         } else {
             "Coroutine Inactiva"
         }
+    }
+
+    /**
+     * Obtiene la frecuencia actual configurada
+     */
+    fun obtenerFrecuenciaActual(): Int {
+        return configuracionesLocalManager.getFrecuenciaNotificaciones()
     }
 
     /**
@@ -106,6 +120,8 @@ class SimpleNotificationScheduler(private val context: Context) {
             Log.e(TAG, "Error ejecutando verificación inmediata: ${e.message}", e)
         }
     }
+
+
 
     /**
      * Verifica si hay nuevas notificaciones
@@ -127,22 +143,17 @@ class SimpleNotificationScheduler(private val context: Context) {
             val notificacionesNoLeidas = repository.getNotificacionesPorEstatus(1)
             Log.d(TAG, "Encontradas ${notificacionesNoLeidas.size} notificaciones no leídas")
 
-            // Verificar si hay notificaciones nuevas
-            val notificacionesNuevas = obtenerNotificacionesNuevas(notificacionesNoLeidas)
-            
-            if (notificacionesNuevas.isNotEmpty()) {
-                Log.d(TAG, "🎉 Encontradas ${notificacionesNuevas.size} notificaciones nuevas")
+            // Si hay al menos una notificación no leída, mostrar todas
+            if (notificacionesNoLeidas.isNotEmpty()) {
+                Log.d(TAG, "🎉 Encontradas ${notificacionesNoLeidas.size} notificaciones no leídas")
                 
-                // Mostrar notificación para cada nueva notificación
-                notificacionesNuevas.forEach { notificacion ->
+                // Mostrar notificación para cada notificación no leída
+                notificacionesNoLeidas.forEach { notificacion ->
                     notificationHelper.mostrarNotificacion(notificacion)
                     Log.d(TAG, "Notificación mostrada: ${notificacion.notificacion}")
                 }
-                
-                // Actualizar timestamp de última verificación
-                actualizarTimestampVerificacion()
             } else {
-                Log.d(TAG, "No hay notificaciones nuevas")
+                Log.d(TAG, "No hay notificaciones no leídas")
             }
             
         } catch (e: Exception) {
@@ -150,57 +161,5 @@ class SimpleNotificationScheduler(private val context: Context) {
         }
     }
 
-    /**
-     * Filtra las notificaciones que son realmente nuevas
-     */
-    private suspend fun obtenerNotificacionesNuevas(
-        notificaciones: List<Notificacion>
-    ): List<Notificacion> {
-        val timestampUltimaVerificacion = obtenerTimestampUltimaVerificacion()
-        
-        return notificaciones.filter { notificacion ->
-            if (timestampUltimaVerificacion == 0L) {
-                Log.d(TAG, "Primera verificación, todas las notificaciones son nuevas")
-                true
-            } else {
-                val fechaNotificacion = parsearFechaNotificacion(notificacion.fecha_notificacion)
-                val esNueva = fechaNotificacion > timestampUltimaVerificacion
-                if (esNueva) {
-                    Log.d(TAG, "Notificación nueva encontrada: ${notificacion.notificacion}")
-                }
-                esNueva
-            }
-        }
-    }
 
-    /**
-     * Parsea la fecha de notificación
-     */
-    private fun parsearFechaNotificacion(fechaString: String): Long {
-        return try {
-            val formatter = java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
-            val zonedDateTime = java.time.ZonedDateTime.parse(fechaString, formatter)
-            zonedDateTime.toInstant().toEpochMilli()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parseando fecha: $fechaString", e)
-            System.currentTimeMillis()
-        }
-    }
-
-    /**
-     * Obtiene el timestamp de la última verificación
-     */
-    private fun obtenerTimestampUltimaVerificacion(): Long {
-        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
-        return prefs.getLong("last_check_timestamp", 0L)
-    }
-
-    /**
-     * Actualiza el timestamp de la última verificación
-     */
-    private fun actualizarTimestampVerificacion() {
-        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putLong("last_check_timestamp", System.currentTimeMillis()).apply()
-        Log.d(TAG, "Timestamp de verificación actualizado")
-    }
 }

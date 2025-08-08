@@ -92,7 +92,7 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                             
-                            // Botón de prueba (opcional)
+                            // Botón de prueba
                             OutlinedButton(
                                 onClick = { notificationHelper.mostrarNotificacionPrueba() },
                                 modifier = Modifier.padding(top = 8.dp)

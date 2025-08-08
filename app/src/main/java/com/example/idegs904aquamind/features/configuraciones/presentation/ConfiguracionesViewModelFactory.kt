@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.idegs904aquamind.features.configuraciones.data.ConfiguracionesRepository
+import com.example.idegs904aquamind.features.configuraciones.data.ConfiguracionesLocalManager
 import com.example.idegs904aquamind.features.configuraciones.domain.ActualizarConfiguracionUseCase
 import com.example.idegs904aquamind.features.configuraciones.domain.GetConfiguracionesUseCase
+import com.example.idegs904aquamind.features.notifications.service.SimpleNotificationScheduler
 import com.example.idegs904aquamind.network.service.RetrofitBuilder
 
 /**
@@ -21,11 +23,15 @@ class ConfiguracionesViewModelFactory(
             val repository = ConfiguracionesRepository(apiService)
             val getConfiguracionesUseCase = GetConfiguracionesUseCase(repository)
             val actualizarConfiguracionUseCase = ActualizarConfiguracionUseCase(repository)
+            val configuracionesLocalManager = ConfiguracionesLocalManager(context)
+            val notificationScheduler = SimpleNotificationScheduler(context)
             
             @Suppress("UNCHECKED_CAST")
             return ConfiguracionesViewModel(
                 getConfiguracionesUseCase = getConfiguracionesUseCase,
-                actualizarConfiguracionUseCase = actualizarConfiguracionUseCase
+                actualizarConfiguracionUseCase = actualizarConfiguracionUseCase,
+                configuracionesLocalManager = configuracionesLocalManager,
+                notificationScheduler = notificationScheduler
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

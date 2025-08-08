@@ -42,15 +42,22 @@ class ControllersViewModel(context: Context) : ViewModel() {
                 _uiState.value = ControllersUiState.Success(nodos)
                 _nodosWithLoading.value = nodos.map { NodoWithLoadingState(it) }
                 
-                // Iniciar actualizaciones automáticas
-                iniciarActualizacionesAutomaticas()
+                // DESACTIVADO: Actualizaciones automáticas de controles
+                // iniciarActualizacionesAutomaticas()
             } catch (e: Exception) {
                 _uiState.value = ControllersUiState.Error(e.message ?: "Error desconocido")
             }
         }
     }
     
+    /**
+     * DESACTIVADO: Actualizaciones automáticas de controles
+     * Se desactivó para reducir el consumo de recursos y batería.
+     * Los controles ahora solo se actualizan manualmente o al cargar la pantalla.
+     */
     private fun iniciarActualizacionesAutomaticas() {
+        // DESACTIVADO: Comentado para evitar actualizaciones automáticas
+        /*
         controllersScheduler.iniciarActualizacionesPeriodicas { nodosActualizados ->
             viewModelScope.launch {
                 try {
@@ -62,6 +69,7 @@ class ControllersViewModel(context: Context) : ViewModel() {
                 }
             }
         }
+        */
     }
     
     fun toggleNodoEstatus(nodo: Nodo) {

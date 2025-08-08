@@ -12,7 +12,7 @@ class NotificationTimerScheduler(private val context: Context) {
 
     companion object {
         private const val TAG = "NotificationTimerScheduler"
-        private const val FREQUENCY_SECONDS = 30L
+        private const val FREQUENCY_SECONDS = 100L
     }
 
     /**

@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.idegs904aquamind.data.model.Configuracion
 import com.example.idegs904aquamind.features.configuraciones.presentation.components.ConfiguracionInput
+import com.example.idegs904aquamind.features.configuraciones.presentation.components.ConfiguracionSwitch
+import com.example.idegs904aquamind.features.configuraciones.presentation.components.FrecuenciaInput
 
 @Composable
 fun ConfiguracionesScreen(
@@ -56,7 +58,7 @@ fun ConfiguracionesScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Configuración de niveles de agua",
+                    text = "Configuración del sistema y niveles de agua",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f)
                 )
@@ -83,7 +85,32 @@ fun ConfiguracionesScreen(
             if (state.isLoading) {
                 LoadingCard()
             } else {
-                // Configuraciones
+                // Sección de Configuración del Sistema
+                ConfiguracionSwitch(
+                    titulo = "Actualizaciones Automáticas",
+                    descripcion = "Controla si la aplicación verifica notificaciones automáticamente",
+                    enabled = state.actualizacionesAutomaticas,
+                    onToggle = { enabled ->
+                        viewModel.toggleActualizacionesAutomaticas(enabled)
+                    },
+                    isUpdating = state.isUpdating
+                )
+                
+                // Input de Frecuencia de Notificaciones
+                FrecuenciaInput(
+                    titulo = "Frecuencia de Notificaciones",
+                    descripcion = "Configura cada cuántos segundos se verifican las notificaciones automáticamente",
+                    valor = state.frecuenciaNotificaciones,
+                    onValueChange = { segundos ->
+                        viewModel.actualizarFrecuenciaNotificaciones(segundos)
+                    },
+                    onSave = {
+                        // El valor se actualiza a través del onValueChange
+                    },
+                    isUpdating = state.isUpdating
+                )
+                
+                // Configuraciones de Niveles de Agua
                 state.configuraciones
                     .filter { it.id_configuracion in 1..4 }
                     .forEach { configuracion ->
@@ -194,8 +221,8 @@ fun ErrorCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                 Icon(
                     imageVector = Icons.Default.Error,
                     contentDescription = "Error",
@@ -203,7 +230,7 @@ fun ErrorCard(
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                    Text(
                     text = "Error",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,

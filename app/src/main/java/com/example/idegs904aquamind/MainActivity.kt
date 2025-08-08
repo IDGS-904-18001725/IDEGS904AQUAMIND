@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.idegs904aquamind.auth.data.SessionManager
 import com.example.idegs904aquamind.features.notifications.service.SimpleNotificationScheduler
 import com.example.idegs904aquamind.features.notifications.utils.NotificationPermissionHelper
+import com.example.idegs904aquamind.features.configuraciones.data.ConfiguracionesLocalManager
 import com.example.idegs904aquamind.navigation.AppNavHost
 import com.example.idegs904aquamind.navigation.Screen
 import com.example.idegs904aquamind.ui.theme.AquaMindTheme
@@ -20,6 +21,7 @@ import com.example.idegs904aquamind.ui.theme.AquaMindTheme
 class MainActivity : FragmentActivity() {
     private lateinit var notificationScheduler: SimpleNotificationScheduler
     private lateinit var permissionHelper: NotificationPermissionHelper
+    private lateinit var configuracionesLocalManager: ConfiguracionesLocalManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +29,7 @@ class MainActivity : FragmentActivity() {
         // Inicializar helpers
         notificationScheduler = SimpleNotificationScheduler(this)
         permissionHelper = NotificationPermissionHelper(this)
+        configuracionesLocalManager = ConfiguracionesLocalManager(this)
 
         // Solicitar permisos de notificación
         permissionHelper.solicitarPermisosNotificacion(this) { isGranted ->
@@ -47,9 +50,16 @@ class MainActivity : FragmentActivity() {
                     navController = navController,
                     startDestination = startDestination,
                     onLoginSuccess = {
-                        // Iniciar verificaciones cuando el usuario inicie sesión
+                        // Verificar configuración antes de iniciar actualizaciones automáticas
                         try {
-                            notificationScheduler.iniciarVerificacionesPeriodicas()
+                            val actualizacionesHabilitadas = configuracionesLocalManager.getActualizacionesAutomaticas()
+                            if (actualizacionesHabilitadas) {
+                                val frecuencia = configuracionesLocalManager.getFrecuenciaNotificaciones()
+                                notificationScheduler.iniciarVerificacionesPeriodicas()
+                                android.util.Log.d("MainActivity", "Actualizaciones automáticas iniciadas cada $frecuencia segundos")
+                            } else {
+                                android.util.Log.d("MainActivity", "Actualizaciones automáticas desactivadas por configuración")
+                            }
                         } catch (e: Exception) {
                             // Log del error pero no crashear la app
                             android.util.Log.e("MainActivity", "Error iniciando notificaciones: ${e.message}", e)
