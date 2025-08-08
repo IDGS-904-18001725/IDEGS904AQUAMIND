@@ -11,6 +11,7 @@ import com.example.idegs904aquamind.data.model.MarcarLeidaRequest
 import com.example.idegs904aquamind.data.model.ControlRequest
 import com.example.idegs904aquamind.data.model.Configuracion
 import com.example.idegs904aquamind.data.model.ActualizarConfiguracionRequest
+import com.example.idegs904aquamind.data.model.WaterLevelResponse
 import com.example.idegs904aquamind.features.perfil.data.model.Usuario
 import com.example.idegs904aquamind.features.perfil.data.model.ActualizarUsuarioRequest
 import retrofit2.http.Body
@@ -121,4 +122,7 @@ interface ApiService {
         @Path("id") id: Int,
         @Body request: ActualizarConfiguracionRequest
     ): Configuracion
+
+    @GET("niveles-agua/actual-con-historial")
+    suspend fun getWaterLevel(): WaterLevelResponse
 }

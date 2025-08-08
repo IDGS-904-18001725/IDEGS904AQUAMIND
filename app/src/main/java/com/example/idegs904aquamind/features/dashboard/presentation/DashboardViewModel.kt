@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.idegs904aquamind.auth.data.SessionManager
 import com.example.idegs904aquamind.data.model.Evento
 import com.example.idegs904aquamind.data.model.TipoPeriodo
+import com.example.idegs904aquamind.data.model.WaterLevelResponse
+import com.example.idegs904aquamind.features.dashboard.data.WaterLevelRepository
+import com.example.idegs904aquamind.features.dashboard.domain.GetWaterLevelUseCase
 import com.example.idegs904aquamind.features.eventos.data.EventosRepository
 import com.example.idegs904aquamind.features.eventos.domain.GetEventosUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +19,8 @@ sealed class DashboardUiState {
     object Loading : DashboardUiState()
     data class Success(
         val nombreUsuario: String,
-        val eventos: List<Evento>
+        val eventos: List<Evento>,
+        val waterLevelData: WaterLevelResponse? = null
     ) : DashboardUiState()
     data class Error(val message: String) : DashboardUiState()
     object Empty : DashboardUiState()
@@ -26,6 +30,8 @@ class DashboardViewModel(context: Context) : ViewModel() {
     private val sessionManager = SessionManager(context)
     private val repository = EventosRepository(context)
     private val getEventosUseCase = GetEventosUseCase(repository)
+    private val waterLevelRepository = WaterLevelRepository(context)
+    private val getWaterLevelUseCase = GetWaterLevelUseCase(waterLevelRepository)
 
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Empty)
     val uiState: StateFlow<DashboardUiState> = _uiState
@@ -40,7 +46,14 @@ class DashboardViewModel(context: Context) : ViewModel() {
                 // Obtener datos de consumo de los últimos 7 días
                 val eventos = getEventosUseCase.getEventosPorPeriodo(7, TipoPeriodo.DIAS.id)
                 
-                _uiState.value = DashboardUiState.Success(nombreUsuario, eventos)
+                // Obtener datos del nivel de agua
+                val waterLevelData = try {
+                    getWaterLevelUseCase()
+                } catch (e: Exception) {
+                    null // Si falla, no crashear la app
+                }
+                
+                _uiState.value = DashboardUiState.Success(nombreUsuario, eventos, waterLevelData)
             } catch (e: Exception) {
                 val errorMessage = when {
                     e.message?.contains("consumo_total") == true -> "No hay datos de consumo disponibles"
